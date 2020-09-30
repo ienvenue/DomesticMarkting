@@ -22,7 +22,7 @@ store_use_col=['门店名称','门店编码','千店导购','虚拟门店','一�
                '客户门店编码','客户门店名称','网点分级','门店等级','市场等级','创建时间',
                '更新时间','TERMINAL_ORG_ID','TERMINAL_ID']
 
-engine=create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.97:3306/ods")
+engine=create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
 
 
 def excel2db(path,tablename,sheetname,type,cols,rownum):
@@ -40,5 +40,6 @@ def csv2db(path,tablename,type,cols,rownum):
 
 
 # df=pd.read_excel('C:\Users\ex_chenyj12\Downloads\出样规则配置表.xlsx', sheet_name='Sheet0', header=0)
-    # excel2db(path=r'E:\Share\每日导数\出样9.27.xlsx',tablename='样机上样数据',sheetname='出样明细',
-    #          type='replace',cols=sample_use_col,rownum=0)
+
+excel2db(path=r'E:\Share\每日导数\样机9.29.xlsx',\
+         tablename='样机上样数据',sheetname='出样明细',type='replace',cols=sample_use_col,rownum=0)

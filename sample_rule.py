@@ -10,7 +10,7 @@ list_result=[]
 list_sampling_rule=[]
 unsampled=[]
 
-engine=create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.97:3306/ods")
+engine=create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
 
 sql_sampled=''' select distinct c.center as 中心, a.门店编码, case when a.门店等级 in ('B级', 'A级', 'A+级') then 1
                 else 0 end as 是否B及以上, a.二级分类, a.经营状态 , case when b.型号编码 = '71038120Z00461' then 'BVL1D100EY' 
