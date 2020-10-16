@@ -1,18 +1,17 @@
 import pandas as pd
-import datetime
+import datetime,pymysql,os,time
 import sqlalchemy
 from sqlalchemy import create_engine
 
-set_suit1={'MG100T2WADQCY', 'MH100-H1WY'}
-set_suit2={'MG100T1WDQC', 'MH100-H1W'}
-
+# 定义已出样型号list，需要出样list，未出样list
 list_result=[]
 list_sampling_rule=[]
 unsampled=[]
 
 engine=create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
 
-sql_sampled=''' select distinct c.center as 中心, a.门店编码, case when a.门店等级 in ('B级', 'A级', 'A+级') then 1
+# 获取数据库出样数据
+sql_sampled='''  select distinct c.area as 区域,c.center as 中心, a.门店编码, case when a.门店等级 in ('B级', 'A级', 'A+级') then 1
                 else 0 end as 是否B及以上, a.二级分类, a.经营状态 , case when b.型号编码 = '71038120Z00461' then 'BVL1D100EY' 
                 when b.型号编码 is null then '未出样'
                 else SUBSTRING_INDEX(b.型号, ' ', 1) end as 已出型号
@@ -68,6 +67,7 @@ sql_sampled=''' select distinct c.center as 中心, a.门店编码, case when a.
                  'S00014548' )
                 '''
 
+# 获取数据库出样规则
 sql_sampling='''SELECT 渠道,是否B及以上,型号 as 必出型号
                 FROM ods.出样规则
                 where 是否B及以上='0'
@@ -75,6 +75,7 @@ sql_sampling='''SELECT 渠道,是否B及以上,型号 as 必出型号
                 SELECT 渠道,'1',型号 as 必出型号
                 FROM ods.出样规则 '''
 
+# 定义型号匹配表
 replace_dic={'BVL1D100NET': '国米系列', 'BVL1G100NET': '国米系列', 'BVL1D100EY': '小骑士系列', 'BVL1D80EY': '小骑士系列',
              'TD100-14266WMADT': '14266系列', 'TG100-14266WMADT': '14266系列', 'TD100-14266WMIADT': '14266系列',
              'TG100-14266WMIADT': '14266系列', 'TD100PM02T': 'PM02T系列', 'TG100PM02T': 'PM02T系列',
@@ -86,29 +87,36 @@ replace_dic={'BVL1D100NET': '国米系列', 'BVL1G100NET': '国米系列', 'BVL1
              'MD100-1451WDY': '1451系列', 'MG100-1451WDY': '1451系列', 'MBS100PT2WADT': '双驱波轮P系列',
              'MBS90PT2WADT': '双驱波轮P系列', 'MBS100T2WADY': '双驱波轮全流通系列', 'MBS90T2WADY': '双驱波轮全流通系列'
              }
+set_suit1={'MG100T2WADQCY', 'MH100-H1WY'}
+set_suit2={'MG100T1WDQC', 'MH100-H1W'}
 
 
-def group_concat(df,col):
+def group_concat(df, col):
+    '''
+    将df进行分组合并
+    :param df:dataframe
+    :param col:column
+    :return: df
+    '''
     df[col]=','.join(set(df[col]))
     return df.drop_duplicates()
 
 
 df_sampled=pd.read_sql(sql=sql_sampled, con=engine)
 df_sampled['已出型号']=df_sampled['已出型号'].replace(replace_dic)
-df_sampled=df_sampled.groupby(['中心', '门店编码', '是否B及以上', '二级分类', '经营状态'], group_keys=False, sort=False). \
-    apply(group_concat,col='已出型号')
+df_sampled=df_sampled.groupby(['区域','中心', '门店编码', '是否B及以上', '二级分类', '经营状态'], group_keys=False, sort=False). \
+    apply(group_concat, col='已出型号')
 
 df_sampling=pd.read_sql(sql=sql_sampling, con=engine)
 df_sampling['必出型号']=df_sampling['必出型号'].replace(replace_dic)
-df_sampling=df_sampling.groupby(['渠道', '是否B及以上'], group_keys=False, sort=False).apply(group_concat,col='必出型号')
-
+df_sampling=df_sampling.groupby(['渠道', '是否B及以上'], group_keys=False, sort=False).apply(group_concat, col='必出型号')
 
 
 def unsampled_rule(sampled_set, sampling_set):
     """
     需要出样型号等于必须出样型号减去规则内已经出样的样机型号
-    :param set1:
-    :param set2:
+    :param set1:sampled_set
+    :param set2:sampling_set
     :return: 转换为字符串，返回未出样清单
     """
     return ','.join(sampling_set - (sampled_set & sampling_set))
@@ -117,8 +125,8 @@ def unsampled_rule(sampled_set, sampling_set):
 def sample_rule(channel, level):
     """
     规则判断，返回必出型号
-    :param channel:
-    :param level:
+    :param channel:渠道
+    :param level:门店等级
     :return: 规则必出型号
     """
     for i in df_sampling.index:
@@ -151,9 +159,18 @@ if __name__ == '__main__':
     sample_judge()
     df_sampled['出样规则']=list_sampling_rule
     df_sampled['是否合格']=list_result
+    df_sampled['二级分类']=df_sampled['二级分类'].str.replace('常规店','')
+    # df_sampled['二级分类'].map(lambda x: x.replace('常规店',''))
+    df_sampled['是否合格']=df_sampled['是否合格'].replace({False:0,True:1})
     df_sampled['还需出样']=unsampled
-    df_sampled.to_excel('E:\Share\出样结果.xlsx', sheet_name='出样结果', index=False)
+    # 定义路径，包含时间
+    date=time.strftime("%Y%m%d", time.localtime(time.time()))
+    print('正在导出'+date +'-出样结果.xlsx')
+    df_sampled.to_excel('E:/Share/' + date + r'-出样结果.xlsx', sheet_name='出样结果', index=False)
+    print('导出' + date + '-出样结果.xlsx 完成')
     df_unsampled=df_sampled.drop('还需出样', 1).join(df_sampled['还需出样'].str.split(',', expand=True).stack(). \
         reset_index().set_index('level_0').drop('level_1', 1).rename(columns={0: '还需出样'})).drop('出样规则', 1). \
         drop('已出型号', 1)
-    df_unsampled.to_excel('E:\Share\出样明细.xlsx', sheet_name='出样明细', index=False)
+    print('正在导出' + date + '-出样明细.xlsx')
+    df_unsampled.to_excel('E:/Share/' + date + r'-出样明细.xlsx', sheet_name='出样明细', index=False)
+    print('导出' + date + '-出样明细.xlsx 完成')
