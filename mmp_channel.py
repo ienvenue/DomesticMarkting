@@ -25,19 +25,19 @@ sample_use_col=['导购编码','导购员姓名','导购员手机','分部','门
 engine=create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
 
 print ("二级渠道数据导入开始时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-channel_file = r'E:\Share\每日导数\二级1014.xlsx'
+channel_file = r'E:\Share\每日导数\二级1017.xlsx'
 channel_df = pd.read_excel(channel_file,sheet_name='   渠道出库明细',header=1,usecols=channel_use_col)
 channel_df.to_sql('二级代理渠道零售数据', con=engine, if_exists='append', index=False)
 print("二级渠道数据导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
 print ("一级渠道数据导入开始时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-channel_file = r'E:\Share\每日导数\一级1014.xlsx'
+channel_file = r'E:\Share\每日导数\一级1017.xlsx'
 channel_df = pd.read_excel(channel_file,sheet_name='   渠道出库明细',header=1,usecols=channel_use_col)
 channel_df.to_sql('一级代理渠道零售数据', con=engine, if_exists='append', index=False)
 print("一级渠道数据导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
 print("mmp零售数据导入开始时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-mmp_file = r'E:\Share\每日导数\mmp10.14.xlsx'
+mmp_file = r'E:\Share\每日导数\mmp1017.xlsx'
 mmp_df = pd.read_excel(mmp_file,sheet_name='Sheet0',header=0,usecols=mmp_use_col)
 mmp_df.to_sql('mmp零售数据', con=engine, if_exists='append', index=False)
 print("mmp零售数据导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))

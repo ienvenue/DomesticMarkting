@@ -7,14 +7,8 @@ from openpyxl import load_workbook
 t1=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 print("零售日报模型正在运行，开始计算时间 :", t1)
 
-# 定义路径，包含时间
-yesterday = datetime.today()+timedelta(-1)
-date = yesterday.strftime('%Y-%m-%d')
-last_year_date=str(time.struct_time(time.localtime())[0]-1)+'-'+str(time.struct_time(time.localtime())[1])\
-+'-'+str(time.struct_time(time.localtime())[2]-1)
+# 定义路径
 file=r'\\10.157.2.94\临时文件\指环王.xlsx'
-
-
 
 # 定义mmp到人员sql
 sql_mmp='''select
@@ -242,21 +236,21 @@ group by
 
 # 零售20年10月数据
 sql_202010retail='''
-            select c.中心, sum(a.总价)/10000 as 销额（万元）, 
-            sum(a.数量) as 销量（台）,
-            sum(a.总价)/sum(a.数量) as 销售均价（元）,
-            sum(d.是否重点机型*a.数量) as 重点机型达成（台）
-            from ods.mmp零售数据 a
-            left join dim.连锁高端机配置表 d 
-            on d.编码 = a.商品编码 
-            inner join dim.中心分部配置 c on
-            c.分部名称 = a.分部名称
-            inner join dim.零售门店分类 b
-            on b.门店一级分类 =a.门店一级分类 
-            and b.门店二级分类 =a.门店二级分类
-            where a.创建时间 between '2020-10-01' and '''+"'"+date+"'"+'''
-            and (b.类别 ='3C' or b.类别='TOP') 
-            group by c.中心
+select c.中心, sum(a.总价)/10000 as 销额（万元）, 
+sum(a.数量) as 销量（台）,
+sum(a.总价)/sum(a.数量) as 销售均价（元）,
+sum(d.是否重点机型*a.数量) as 重点机型达成（台）
+from ods.mmp零售数据 a
+left join dim.连锁高端机配置表 d 
+on d.编码 = a.商品编码 
+inner join dim.中心分部配置 c on
+c.分部名称 = a.分部名称
+inner join dim.零售门店分类 b
+on b.门店一级分类 =a.门店一级分类 
+and b.门店二级分类 =a.门店二级分类
+where a.创建时间 between date_add(curdate(),interval -day(curdate())+1 day) and date_add(curdate(),interval -1 day)
+and (b.类别 ='3C' or b.类别='TOP') 
+group by c.中心
 '''
 sql_202010top3c=''' select c.中心,b.类别 , sum(a.总价)/10000 as 销额（万元）, 
             sum(a.数量) as 销量（台）,
@@ -270,9 +264,9 @@ sql_202010top3c=''' select c.中心,b.类别 , sum(a.总价)/10000 as 销额（�
             inner join dim.零售门店分类 b
             on b.门店一级分类 =a.门店一级分类 
             and b.门店二级分类 =a.门店二级分类
-            where  a.创建时间 between '2020-10-01' and '''+"'"+date+"'"+'''
+            where a.创建时间 between date_add(curdate(),interval -day(curdate())+1 day) and date_add(curdate(),interval -1 day)
             and (b.类别 ='3C' or b.类别='TOP') 
-            group by c.中心,b.类别'''
+            group by c.中心,b.类别 '''
 sql_202010date='''
 select c.中心,a.创建时间 , sum(a.总价)/10000 as 销额（万元）, 
             sum(a.数量) as 销量（台）,
@@ -291,7 +285,7 @@ select c.中心,a.创建时间 , sum(a.总价)/10000 as 销额（万元）,
             group by c.中心,a.创建时间'''
 
 sql_201910retail='''
-            select c.中心, sum(a.总价)/10000 as 销额（万元）, 
+select c.中心, sum(a.总价)/10000 as 销额（万元）, 
             sum(a.数量) as 销量（台）,
             sum(a.总价)/sum(a.数量) as 销售均价（元）,
             sum(d.是否重点机型*a.数量) as 重点机型达成（台）
@@ -303,7 +297,7 @@ sql_201910retail='''
             inner join dim.零售门店分类 b
             on b.门店一级分类 =a.门店一级分类 
             and b.门店二级分类 =a.门店二级分类
-            where a.创建时间 between '2019-10-01' and '''+"'"+last_year_date+"'"+'''
+            where a.创建时间 between date_add(date_add(curdate(),interval -1 year),interval -day(curdate())+1 day) and date_add(date_add(curdate(),interval -1 year),interval -1 day)
             and (b.类别 ='3C' or b.类别='TOP') 
             group by c.中心
 '''
@@ -456,6 +450,7 @@ from
 	inner join ods.area_center_zhihuanwang c on
 		c.center_name = a.中心名称
 	where
+	  year(a.单据日期)='2020'  and
 		a.`卖方合作模式大类(CRM)/一级分类(CMDM)` in ('TOP',
 		'V200',
 		'代理商',
@@ -480,7 +475,8 @@ union all
 		and b.score >0
 		and a.卖方客户名称 not like '已失效%' -- 新增剔除已失效客户
 	inner join ods.area_center_zhihuanwang c on
-		c.center_name = a.中心名称) d
+		c.center_name = a.中心名称
+		where  year(a.单据日期)='2020' ) d
 where
 	d.center <> '新疆'
 group by
@@ -506,9 +502,208 @@ where
 group by
 	c.center
 	'''
+# 今年代理渠道销售台数份额均价
+sql_channel_1='''
+select
+	d.center as 中心,
+	sum(d.`开单数量`) as 今年台数,
+	sum(d.常规促销价*d.开单数量)/10000 as 今年销售额（万元）,
+	sum(d.常规促销价*d.开单数量)/sum(d.开单数量) as 今年销售均价（元）
+from
+	(
+	select
+		c.center, a.开单数量,f.常规促销价 
+	from
+		ods.二级代理渠道零售数据 a
+	inner join ods.代理渠道常促价配置表 f
+	on a.销售型号 =f.产品型号
+	inner join ods.area_center_zhihuanwang c on
+		c.center_name = a.中心名称
+	where (a.单据日期 between   date_add(curdate(),interval -day(curdate())+1 day)  and date_add(curdate(),interval -1 day))
+	 and
+		a.`卖方合作模式大类(crm)/一级分类(cmdm)` in ('top',
+		'v100',
+		'代理商',
+		'多品店',
+		'家装店',
+		'零售代理',
+		'零售商',
+		'其他渠道',
+		'旗舰店',
+		'专卖店',
+		'专业工程',
+		'专业工程代理')
+		and a.卖方客户名称 not like '已失效%'
+union all
+	select
+		c.center, a.开单数量,f.常规促销价 
+	from
+		ods.一级代理渠道零售数据 a
+	inner join ods.代理渠道常促价配置表 f
+	on a.销售型号=f.产品型号
+		and a.卖方客户名称 not like '已失效%' -- 新增剔除已失效客户
+	inner join ods.area_center_zhihuanwang c on
+		c.center_name = a.中心名称
+			where  (a.单据日期 between   date_add(curdate(),interval -day(curdate())+1 day)  and date_add(curdate(),interval -1 day))) d
+where
+	d.center <> '新疆'
+group by
+	d.center
+union all
+select
+	c.center as 中心,
+	sum(a.数量) as 台数,
+	sum(a.总价)/10000 as 销售额（万元）,
+	sum(a.总价)/sum(a.数量) as 销售均价（元）
+from
+	ods.mmp零售数据 a
+inner join ods.area_center_zhihuanwang c on
+	c.center_name = a.分部名称
+where
+	a.门店一级分类 not in ( '苏宁',
+	'国美')
+	and c.center = '新疆'
+	 and (a.创建时间 between   date_add(curdate(),interval -day(curdate())+1 day)  and date_add(curdate(),interval -1 day))
+group by
+	c.center
+'''
+
+# 去年代理渠道销售台数份额均价
+sql_channel_2='''
+select
+	d.center as 中心,
+	sum(d.`开单数量`) as  去年台数,
+	sum(d.常规促销价*d.开单数量)/10000 as  去年销售额（万元）,
+	sum(d.常规促销价*d.开单数量)/sum(d.开单数量) as  去年销售均价（元）
+from
+	(
+	select
+		c.center, a.开单数量,f.常规促销价 
+	from
+		ods.二级代理渠道零售数据 a
+	inner join ods.代理渠道常促价配置表 f
+	on a.销售型号 =f.产品型号
+	inner join ods.area_center_zhihuanwang c on
+		c.center_name = a.中心名称
+	where (a.单据日期 between   date_add(date_add(curdate(),interval -1 year),interval -day(curdate())+1 day)  and date_add(date_add(curdate(),interval -1 year),interval -1 day))
+	 and
+		a.`卖方合作模式大类(crm)/一级分类(cmdm)` in ('top',
+		'v200',
+		'代理商',
+		'多品店',
+		'家装店',
+		'零售代理',
+		'零售商',
+		'其他渠道',
+		'旗舰店',
+		'专卖店',
+		'专业工程',
+		'专业工程代理')
+		and a.卖方客户名称 not like '已失效%'
+union all
+	select
+		c.center, a.开单数量,f.常规促销价 
+	from
+		ods.一级代理渠道零售数据 a
+	inner join ods.代理渠道常促价配置表 f
+	on a.销售型号=f.产品型号
+		and a.卖方客户名称 not like '已失效%' -- 新增剔除已失效客户
+	inner join ods.area_center_zhihuanwang c on
+		c.center_name = a.中心名称
+			where  (a.单据日期 between   date_add(date_add(curdate(),interval -1 year),interval -day(date_add(curdate(),interval -1 year))+1 day)  and date_add(date_add(curdate(),interval -1 year),interval -1 day))) d
+where
+	d.center <> '新疆'
+group by
+	d.center
+union all
+select
+	c.center as 中心,
+	sum(a.数量) as 台数,
+	sum(a.总价)/10000 as 销售额（万元）,
+	sum(a.总价)/sum(a.数量) as 销售均价（元）
+from
+	ods.mmp零售数据 a
+inner join ods.area_center_zhihuanwang c on
+	c.center_name = a.分部名称
+where
+	a.门店一级分类 not in ( '苏宁',
+	'国美')
+	and c.center = '新疆'
+	 and (a.创建时间 between   date_add(date_add(curdate(),interval -1 year),interval -day(curdate())+1 day)  and date_add(date_add(curdate(),interval -1 year),interval -1 day))
+group by
+	c.center
+'''
+
+# 上个月代理渠道销售台数份额均价
+sql_channel_3='''
+select
+	d.center as 中心,
+	sum(d.`开单数量`) as 上个月台数,
+	sum(d.常规促销价*d.开单数量)/10000 as 上个月销售额（万元）,
+	sum(d.常规促销价*d.开单数量)/sum(d.开单数量) as 上个月销售均价（元）
+from
+	(
+	select
+		c.center, a.开单数量,f.常规促销价 
+	from
+		ods.二级代理渠道零售数据 a
+	inner join ods.代理渠道常促价配置表 f
+	on a.销售型号 =f.产品型号
+	inner join ods.area_center_zhihuanwang c on
+		c.center_name = a.中心名称
+	where (a.单据日期 between   date_add(date_add(curdate(),interval -1 month),interval -day(curdate())+1 day)  and date_add(date_add(curdate(),interval -1 month),interval -1 day))
+	 and
+		a.`卖方合作模式大类(crm)/一级分类(cmdm)` in ('top',
+		'v100',
+		'代理商',
+		'多品店',
+		'家装店',
+		'零售代理',
+		'零售商',
+		'其他渠道',
+		'旗舰店',
+		'专卖店',
+		'专业工程',
+		'专业工程代理')
+		and a.卖方客户名称 not like '已失效%'
+union all
+	select
+		c.center, a.开单数量,f.常规促销价 
+	from
+		ods.一级代理渠道零售数据 a
+	inner join ods.代理渠道常促价配置表 f
+	on a.销售型号=f.产品型号
+		and a.卖方客户名称 not like '已失效%' -- 新增剔除已失效客户
+	inner join ods.area_center_zhihuanwang c on
+		c.center_name = a.中心名称
+			where  (a.单据日期 between   date_add(date_add(curdate(),interval -1 month),interval -day(curdate())+1 day)  and date_add(date_add(curdate(),interval -1 month),interval -1 day))) d
+where
+	d.center <> '新疆'
+group by
+	d.center
+union all
+select
+	c.center as 中心,
+	sum(a.数量) as 台数,
+	sum(a.总价)/10000 as 销售额（万元）,
+	sum(a.总价)/sum(a.数量) as 销售均价（元）
+from
+	ods.mmp零售数据 a
+inner join ods.area_center_zhihuanwang c on
+	c.center_name = a.分部名称
+where
+	a.门店一级分类 not in ( '苏宁',
+	'国美')
+	and c.center = '新疆'
+	 and (a.创建时间 between   date_add(date_add(curdate(),interval -1 month),interval -day(curdate())+1 day)  and date_add(date_add(curdate(),interval -1 month),interval -1 day))
+group by
+	c.center
+'''
+
 #连接正式数据库
 engine=create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
 
+# 写入多个sheet页需要使用ExcelWriter
 def write_excel(df,sheet_name):
     book = load_workbook(file)
     writer = pd.ExcelWriter(file, engine='openpyxl')
@@ -521,9 +716,6 @@ def write_excel(df,sheet_name):
 if not os.path.exists(file):
     os.system(r"touch {}".format(file))
 
-# 写入多个sheet页需要使用ExcelWriter
-# writer=pd.ExcelWriter(file)
-
 # 读取并写入数据
 # df1=pd.read_sql(sql=sql_mmp, con=engine)
 # df2=pd.read_sql(sql=sql_channel, con=engine)
@@ -534,17 +726,12 @@ df6=pd.read_sql(sql=sql_mmp3, con=engine)
 df7=pd.read_sql(sql=sql_mmp4, con=engine)
 df8=pd.read_sql(sql=sql_202010top3c, con=engine)
 df9=pd.read_sql(sql=sql_202010date, con=engine)
+df10=pd.read_sql(sql=sql_channel_1, con=engine)
+df11=pd.read_sql(sql=sql_channel_2, con=engine)
+df12=pd.read_sql(sql=sql_channel_3, con=engine)
 
-# df1.to_excel(writer, sheet_name='mmp到人员',index=False)
-# df2.to_excel(writer, sheet_name='渠道到人员',index=False)
-# df3.to_excel(writer, sheet_name='202010零售系统',index=False)
-# df4.to_excel(writer, sheet_name='201910零售系统',index=False)
-# df5.to_excel(writer, sheet_name='MMP',index=False)
-# df6.to_excel(writer, sheet_name='渠道业务',index=False)
-# df7.to_excel(writer, sheet_name='代理',index=False)
-# df8.to_excel(writer, sheet_name='202010全月',index=False)
-# df9.to_excel(writer, sheet_name='202010近四天',index=False)
-# writer.save()
+# write_excel(df=df1,sheet_name='mmp到人员')
+# write_excel(df=df2,sheet_name='渠道到人员')
 write_excel(df=df3,sheet_name='今年')
 write_excel(df=df4,sheet_name='去年')
 write_excel(df=df5,sheet_name='MMP')
@@ -554,6 +741,9 @@ print("零售日报模型运行完毕，结束计算时间 :", time.strftime("%Y
 print("指环王模型正在运行，开始计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 write_excel(df=df8,sheet_name='全月')
 write_excel(df=df9,sheet_name='近四天')
+write_excel(df=df10,sheet_name='今年代理渠道销售')
+write_excel(df=df11,sheet_name='去年代理渠道销售')
+write_excel(df=df12,sheet_name='上个月代理渠道销售')
 
 t2=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 print("指环王模型运行完毕，结束计算时间 :", t2)
