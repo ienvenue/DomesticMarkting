@@ -1,6 +1,7 @@
 import pandas as pd
 import time
 from sqlalchemy import create_engine
+import openpyxl
 
 # 定义已出样型号list，需要出样list，未出样list
 list_result = []
@@ -67,12 +68,14 @@ sql_sampled = '''  select distinct c.area as 区域,c.center as 中心, a.门店
                 '''
 
 # 获取数据库出样规则
-sql_sampling = ''' SELECT 渠道,是否B及以上,型号 as 必出型号
-                FROM ods.出样规则
-                where 是否B及以上='0'
-                union all 
-                SELECT 渠道,'1',型号 as 必出型号
-                FROM ods.出样规则 '''
+sql_sampling = '''
+select 渠道, 是否B及以上, 型号 as 必出型号
+from ods.出样规则
+where 是否B及以上 = '0'
+and 是否太空舱 = '1'
+union all select 渠道, '1', 型号 as 必出型号
+from ods.出样规则
+where 是否太空舱 = '1' '''
 
 # 定义型号匹配表
 replace_dic = {'BVL1D100NET': '国米系列', 'BVL1G100NET': '国米系列', 'BVL1D100EY': '小骑士系列', 'BVL1D80EY': '小骑士系列',
@@ -144,14 +147,9 @@ def sample_judge():
         sampling_str = sample_rule(channel=df_sampled['二级分类'][i], level=df_sampled['是否B及以上'][i])
         sampling_list = sampling_str.split(',')
         sampling_set = set(sampling_list)
-        if set_suit1.issubset(sampled_set) or set_suit2.issubset(sampled_set):
-            list_sampling_rule.append(sampling_str)
-            list_result.append(sampling_set.issubset(sampled_set))
-            unsampled.append(unsampled_rule(sampled_set, sampling_set))
-        else:
-            list_sampling_rule.append('洗烘套装二选一,' + sampling_str)
-            unsampled.append(unsampled_rule(sampled_set, sampling_set))
-            list_result.append(False)
+        list_sampling_rule.append(sampling_str)
+        list_result.append(sampling_set.issubset(sampled_set))
+        unsampled.append(unsampled_rule(sampled_set, sampling_set))
 
 
 if __name__ == '__main__':
@@ -165,12 +163,12 @@ if __name__ == '__main__':
     # 定义路径，包含时间
     date = time.strftime("%Y%m%d", time.localtime(time.time()))
     print('正在导出' + date + '-出样结果.xlsx')
-    df_sampled.to_excel('E:/Share/' + date + r'-出样结果.xlsx', sheet_name='出样结果', index=False)
+    df_sampled.to_excel('E:/Share/' + date + r'-太空舱出样结果.xlsx', sheet_name='出样结果', index=False)
     print('导出' + date + '-出样结果.xlsx 完成')
     df_unsampled = df_sampled.drop('还需出样', 1).join(df_sampled['还需出样'].str.split(',', expand=True).stack(). \
-                                                   reset_index().set_index('level_0').drop('level_1', 1).rename(
+        reset_index().set_index('level_0').drop('level_1', 1).rename(
         columns={0: '还需出样'})).drop('出样规则', 1). \
         drop('已出型号', 1)
     print('正在导出' + date + '-出样明细.xlsx')
-    df_unsampled.to_excel('E:/Share/' + date + r'-出样明细.xlsx', sheet_name='出样明细', index=False)
+    df_unsampled.to_excel('E:/Share/' + date + r'-太空舱出样明细.xlsx', sheet_name='出样明细', index=False)
     print('导出' + date + '-出样明细.xlsx 完成')
