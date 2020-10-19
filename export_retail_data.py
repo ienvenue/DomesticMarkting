@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 t1 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 print("零售日报模型正在运行，开始计算时间 :", t1)
 
-# 定义路径
+# 定义路径，测试
 file = r'\\10.157.2.94\临时文件\指环王OK.xlsx'
 
 # 定义mmp到人员sql
