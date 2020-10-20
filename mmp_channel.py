@@ -1,6 +1,20 @@
 import pandas as pd
 import time
 from sqlalchemy import create_engine
+import pymysql
+
+conn = pymysql.connect(host='10.157.2.94', user='data_dev', password='data_dev0.', database='ods')
+
+cur = conn.cursor()
+
+del_sql_level1 = 'delete from ods.一级代理渠道零售数据 a where a.单据日期 between ods.first_day_of_the_month() and ods.yesterday_of_the_month()'
+del_sql_level2 = 'delete from ods.二级代理渠道零售数据  a where a.单据日期 between ods.first_day_of_the_month() and ods.yesterday_of_the_month()'
+
+print('删除{}行'.format(cur.execute(del_sql_level1)))
+print('删除{}行'.format(cur.execute(del_sql_level2)))
+
+conn.commit()
+conn.close()
 
 channel_use_col=['中心编码','中心名称','卖方商务中心编码','卖方商务中心',
                  '卖方合作模式大类(CRM)/一级分类(CMDM)','卖方合作模式小类(CRM)/二级分类(CMDM)',
