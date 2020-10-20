@@ -62,5 +62,6 @@ def csv2db(path,tablename,type,cols,rownum):
 # csv2db(path=r'C:\Users\ex_chenyj12\Documents\线下干衣机月度永久表.csv',\
 #          tablename='线下干衣机月度永久表',type='replace',cols=None,rownum=0)
 #
-# excel2db(path=r'E:\Share\每日导数\样机1016.xlsx',\
-#          tablename='样机上样数据',sheetname='Sheet0',type='replace',cols=sample_use_col,rownum=0)
+# 测试
+excel2db(path=r'E:\Share\每日导数\样机1016.xlsx',\
+         tablename='样机上样数据',sheetname='Sheet0',type='replace',cols=sample_use_col,rownum=0)
