@@ -8,7 +8,7 @@ t1 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 print("零售日报模型正在运行，开始计算时间 :", t1)
 
 # 定义路径
-file = r'\\10.157.2.94\临时文件\指环王OK.xlsx'
+file = r'\\10.157.2.94\临时文件\指环王数据每日制作最终版.xlsx'
 
 # 定义mmp到人员sql
 sql_mmp = '''select
@@ -764,7 +764,7 @@ write_excel(df=df9, sheet_name='近四天')
 write_excel(df=df10, sheet_name='今年代理渠道销售')
 write_excel(df=df11, sheet_name='去年代理渠道销售')
 write_excel(df=df12, sheet_name='上个月代理渠道销售')
-write_excel(df=df12, sheet_name='上个月mmp销售')
+write_excel(df=df13, sheet_name='上个月mmp销售')
 
 t2 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 print("指环王模型运行完毕，结束计算时间 :", t2)
