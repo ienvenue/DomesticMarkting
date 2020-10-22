@@ -7,6 +7,7 @@ list_result = []
 list_sampling_rule = []
 unsampled = []
 
+# 连接数据库
 engine = create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
 
 # 获取数据库出样数据
@@ -74,7 +75,7 @@ sql_sampling = ''' SELECT 渠道,是否B及以上,型号 as 必出型号
                 SELECT 渠道,'1',型号 as 必出型号
                 FROM ods.出样规则 '''
 
-# 定义型号匹配表
+# 定义型号匹配表，替换系列和洗烘套装二选一
 replace_dic = {'BVL1D100NET': '国米系列', 'BVL1G100NET': '国米系列', 'BVL1D100EY': '小骑士系列', 'BVL1D80EY': '小骑士系列',
                'TD100-14266WMADT': '14266系列', 'TG100-14266WMADT': '14266系列', 'TD100-14266WMIADT': '14266系列',
                'TG100-14266WMIADT': '14266系列', 'TD100PM02T': 'PM02T系列', 'TG100PM02T': 'PM02T系列',
@@ -91,12 +92,12 @@ set_suit2 = {'MG100T1WDQC', 'MH100-H1W'}
 
 
 def group_concat(df, col):
-    '''
+    """
     将df进行分组合并
     :param df:dataframe
     :param col:column
     :return: df
-    '''
+    """
     df[col] = ','.join(set(df[col]))
     return df.drop_duplicates()
 
