@@ -76,3 +76,4 @@ if __name__ == '__main__':
     file_path = r'\\10.157.2.94\共享文件\固定报表\日报\零售日报.xlsx'
     send_email = SendEmail(recipients, cc_to, file_path)
     send_email.send_outlook()
+    print('test')
