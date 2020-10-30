@@ -10,7 +10,7 @@ unsampled = []
 engine = create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
 
 # 获取数据库出样数据
-sql_sampled = '''  select distinct c.area as 区域,c.center as 中心, a.门店编码, case when a.门店等级 in ('B级', 'A级', 'A+级') then 1
+sql_sampled = '''  select distinct c.area as 区域,c.center as 中心, a.门店编码, a.门店名称, case when a.门店等级 in ('B级', 'A级', 'A+级') then 1
                 else 0 end as 是否B及以上, a.二级分类, a.经营状态 , case when b.型号编码 = '71038120Z00461' then 'BVL1D100EY' 
                 when b.型号编码 is null then '未出样'
                 else SUBSTRING_INDEX(b.型号, ' ', 1) end as 已出型号
@@ -104,7 +104,7 @@ def group_concat(df, col):
 
 df_sampled = pd.read_sql(sql=sql_sampled, con=engine)
 df_sampled['已出型号'] = df_sampled['已出型号'].replace(replace_dic)
-df_sampled = df_sampled.groupby(['区域', '中心', '门店编码', '是否B及以上', '二级分类', '经营状态'], group_keys=False, sort=False). \
+df_sampled = df_sampled.groupby(['区域', '中心', '门店编码', '门店名称', '是否B及以上', '二级分类', '经营状态'], group_keys=False, sort=False). \
     apply(group_concat, col='已出型号')
 
 df_sampling = pd.read_sql(sql=sql_sampling, con=engine)
