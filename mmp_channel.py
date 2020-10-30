@@ -49,8 +49,8 @@ channel_df = pd.read_excel(channel_file, sheet_name='   渠道出库明细', hea
 channel_df.to_sql('一级代理渠道零售数据', con=engine, if_exists='append', index=False)
 print("一级渠道数据导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-print("mmp零售数据导入开始时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+print("mmp零售数据全量导入开始时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 mmp_file = r'E:\Share\每日导数\10.22.xlsx'
 mmp_df = pd.read_excel(mmp_file, sheet_name='Sheet0', header=0, usecols=mmp_use_col)
-mmp_df.to_sql('mmp零售数据', con=engine, if_exists='append', index=False)
-print("mmp零售数据导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+mmp_df.to_sql('mmp零售数据全量', con=engine, if_exists='append', index=False)
+print("mmp零售数据全量导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
