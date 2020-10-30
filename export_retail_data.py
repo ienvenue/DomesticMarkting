@@ -29,7 +29,7 @@ from
             sum(a.数量) as 台数,
             sum(b.is_jiegouji * a.数量) as 高端结构机台数
         from
-            ods.mmp零售数据 a
+            ods.mmp零售数据全量 a
             inner join ods.model_score b on a.商品编码 = b.merch_id
             inner join ods.area_center_zhihuanwang c on c.center_name = a.分部名称
         where
@@ -144,7 +144,7 @@ from
             sum(a.数量) as 台数,
             sum(b.is_jiegouji * a.数量) as 高端结构机台数
         from
-            ods.mmp零售数据 a
+            ods.mmp零售数据全量 a
             inner join ods.model_score b on a.商品编码 = b.merch_id
             inner join ods.area_center_zhihuanwang c on c.center_name = a.分部名称
         where
@@ -218,7 +218,7 @@ select
 	sum(a.数量) AS 台数,
 	sum(b.is_jiegouji * a.数量) as 高端台数
 from
-	ods.mmp零售数据 a
+	ods.mmp零售数据全量 a
 inner join ods.model_score b on
 	a.商品编码 = b.merch_id
 inner join ods.area_center_zhihuanwang c on
@@ -240,7 +240,7 @@ select c.中心, sum(a.总价)/10000 as 销额（万元）,
 sum(a.数量) as 销量（台）,
 sum(a.总价)/sum(a.数量) as 销售均价（元）,
 sum(d.是否重点机型*a.数量) as 重点机型达成（台）
-from ods.mmp零售数据 a
+from ods.mmp零售数据全量 a
 left join dim.连锁高端机配置表 d 
 on d.编码 = a.商品编码 
 inner join dim.中心分部配置 c on
@@ -256,7 +256,7 @@ sql_mmp_last_month='''
 select c.中心, sum(a.总价)/10000 as 销额（万元）, 
 sum(a.数量) as 销量（台）,
 sum(a.总价)/sum(a.数量) as 销售均价（元）
-from ods.mmp零售数据 a
+from ods.mmp零售数据全量 a
 left join dim.连锁高端机配置表 d 
 on d.编码 = a.商品编码 
 inner join dim.中心分部配置 c on
@@ -273,7 +273,7 @@ sql_202010top3c = ''' select c.中心,b.类别 , sum(a.总价)/10000 as 销额�
             sum(a.数量) as 销量（台）,
             sum(a.总价)/sum(a.数量) as 销售均价（元）,
             sum(d.是否重点机型*a.数量) as 重点机型达成（台）
-            from ods.mmp零售数据 a
+            from ods.mmp零售数据全量 a
             left join dim.连锁高端机配置表 d 
             on d.编码 = a.商品编码 
             inner join dim.中心分部配置 c on
@@ -289,7 +289,7 @@ select c.中心,a.创建时间 , sum(a.总价)/10000 as 销额（万元）,
             sum(a.数量) as 销量（台）,
             sum(a.总价)/sum(a.数量) as 销售均价（元）,
             sum(d.是否重点机型*a.数量) as 重点机型达成（台）
-            from ods.mmp零售数据 a
+            from ods.mmp零售数据全量 a
             left join dim.连锁高端机配置表 d 
             on d.编码 = a.商品编码 
             inner join dim.中心分部配置 c on
@@ -306,7 +306,7 @@ select c.中心, sum(a.总价)/10000 as 销额（万元）,
             sum(a.数量) as 销量（台）,
             sum(a.总价)/sum(a.数量) as 销售均价（元）,
             sum(d.是否重点机型*a.数量) as 重点机型达成（台）
-            from ods.mmp零售数据 a
+            from ods.mmp零售数据全量 a
             left join dim.连锁高端机配置表 d 
             on d.编码 = a.商品编码 
             inner join dim.中心分部配置 c on
@@ -323,7 +323,7 @@ sql_mmp2 = '''
 select a.center_group as 分组, a.center_name as 中心, a.target_score as 目标, b.score_1 as 积分, b.number1 as 台数, b.number2 as 高端台数
 from ods.center_group_zhihuanwang a
 inner join ( select c.center, sum(b.score * a.数量) as score_1, sum(a.数量) as number1, sum(b.is_jiegouji*a.数量) as number2
-from ods.mmp零售数据 a
+from ods.mmp零售数据全量 a
 inner join ods.model_score b on
 a.商品编码 = b.merch_id
 inner join ods.area_center_zhihuanwang c on
@@ -340,7 +340,7 @@ where center <> '新疆'
 union all select a.center_group as 分组, a.center_name as 中心, a.target_score as 目标, b.score_1 as 积分, b.number1 as 台数, b.number2 as 高端台数
 from ods.center_group_zhihuanwang a
 inner join ( select c.center, sum(b.score_xinjiang * a.数量) as score_1, sum(a.数量) as number1, sum(b.is_jiegouji*a.数量) as number2
-from ods.mmp零售数据 a
+from ods.mmp零售数据全量 a
 inner join ods.model_score b on
 a.商品编码 = b.merch_id
 inner join ods.area_center_zhihuanwang c on
@@ -358,7 +358,7 @@ sql_19mmp_retail = '''
 select a.center_group as 分组, a.center_name as 中心, a.target_score as 目标, b.score_1 as 积分, b.number1 as 台数, b.number2 as 高端台数
 from ods.center_group_zhihuanwang a
 inner join ( select c.center, sum(b.score * a.数量) as score_1, sum(a.数量) as number1, sum(b.is_jiegouji*a.数量) as number2
-from ods.mmp零售数据 a
+from ods.mmp零售数据全量 a
 inner join ods.model_score b on
 a.商品编码 = b.merch_id
 inner join ods.area_center_zhihuanwang c on
@@ -375,7 +375,7 @@ where center <> '新疆'
 union all select a.center_group as 分组, a.center_name as 中心, a.target_score as 目标, b.score_1 as 积分, b.number1 as 台数, b.number2 as 高端台数
 from ods.center_group_zhihuanwang a
 inner join ( select c.center, sum(b.score_xinjiang * a.数量) as score_1, sum(a.数量) as number1, sum(b.is_jiegouji*a.数量) as number2
-from ods.mmp零售数据 a
+from ods.mmp零售数据全量 a
 inner join ods.model_score b on
 a.商品编码 = b.merch_id
 inner join ods.area_center_zhihuanwang c on
@@ -395,7 +395,7 @@ sql_mmp3 = '''select
     sum(a.数量) as 台数,
     sum(b.is_jiegouji * a.数量) as 高端结构机台数
 from
-    ods.mmp零售数据 a
+    ods.mmp零售数据全量 a
     inner join ods.model_score b on a.商品编码 = b.merch_id
     inner join ods.area_center_zhihuanwang c on c.center_name = a.分部名称
 where
@@ -542,7 +542,7 @@ select
 	sum(a.数量) AS 台数,
 	sum(b.is_jiegouji * a.数量) as 高端台数
 from
-	ods.mmp零售数据 a
+	ods.mmp零售数据全量 a
 inner join ods.model_score b on
 	a.商品编码 = b.merch_id
 inner join ods.area_center_zhihuanwang c on
@@ -613,7 +613,7 @@ select
 	sum(a.数量) AS 台数,
 	sum(b.is_jiegouji * a.数量) as 高端台数
 from
-	ods.mmp零售数据 a
+	ods.mmp零售数据全量 a
 inner join ods.model_score b on
 	a.商品编码 = b.merch_id
 inner join ods.area_center_zhihuanwang c on
@@ -682,7 +682,7 @@ select
 	sum(a.总价)/10000 as 销售额（万元）,
 	sum(a.总价)/sum(a.数量) as 销售均价（元）
 from
-	ods.mmp零售数据 a
+	ods.mmp零售数据全量 a
 inner join ods.area_center_zhihuanwang c on
 	c.center_name = a.分部名称
 where
@@ -748,7 +748,7 @@ select
 	sum(a.总价)/10000 as 销售额（万元）,
 	sum(a.总价)/sum(a.数量) as 销售均价（元）
 from
-	ods.mmp零售数据 a
+	ods.mmp零售数据全量 a
 inner join ods.area_center_zhihuanwang c on
 	c.center_name = a.分部名称
 where
@@ -814,7 +814,7 @@ select
 	sum(a.总价)/10000 as 销售额（万元）,
 	sum(a.总价)/sum(a.数量) as 销售均价（元）
 from
-	ods.mmp零售数据 a
+	ods.mmp零售数据全量 a
 inner join ods.area_center_zhihuanwang c on
 	c.center_name = a.分部名称
 where
@@ -852,7 +852,7 @@ and ods.当月月累(a.单据日期))) d
 where d.center <> '新疆'
 group by d.center,d.单据日期,d.商品编码
 union all select c.center as 中心,a.创建时间 ,a.商品编码, '代理' as 渠道 ,sum(a.数量) as 销售台数, sum(a.总价)/ 10000 as 销售额（万元）, sum(a.总价)/ sum(a.数量) as 销售均价（元）
-from ods.mmp零售数据 a
+from ods.mmp零售数据全量 a
 inner join ods.area_center_zhihuanwang c on
 c.center_name = a.分部名称
 where a.商品编码 in ('21038120000769', '21038120Z00761', '21038120Z00741', '21038110002413', '21038220000321', '21038120001209', '21038110002573')
@@ -864,7 +864,7 @@ union all
 select b.center as 中心,b.创建时间 as 日期,b.商品编码,'零售' as 渠道,b.销量（台）,b.销额（万元）,b.销售均价（元）
 from ods.center_group_zhihuanwang a
 inner join ( select c.center ,a.创建时间,a.商品编码, sum(a.总价)/10000 as 销额（万元）, sum(a.数量) as 销量（台）,sum(a.总价)/sum(a.数量) as 销售均价（元）
-from ods.mmp零售数据 a
+from ods.mmp零售数据全量 a
 inner join ods.area_center_zhihuanwang c on
 c.center_name = a.分部名称
 where ((a.门店一级分类 in ('苏宁', '国美', 'TOP', '五星', '商超')
@@ -879,7 +879,7 @@ where center <> '新疆'
 union all select b.center as 中心,b.创建时间 as 日期,b.商品编码,'零售' as 渠道,b.销量（台）,b.销额（万元）,b.销售均价（元）
 from ods.center_group_zhihuanwang a
 inner join (select c.center  ,a.创建时间,a.商品编码, sum(a.总价)/10000 as 销额（万元）, sum(a.数量) as 销量（台）,sum(a.总价)/sum(a.数量) as 销售均价（元）
-from ods.mmp零售数据 a
+from ods.mmp零售数据全量 a
 inner join ods.area_center_zhihuanwang c on
 c.center_name = a.分部名称
 where a.门店一级分类 in ('苏宁', '国美', '五星', '商超')
