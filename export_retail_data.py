@@ -1,11 +1,8 @@
-import pymysql, os, time
+import os
+import time
 import pandas as pd
+import openpyxl
 from sqlalchemy import create_engine
-from datetime import timedelta, datetime
-from openpyxl import load_workbook
-
-t1 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-print("零售日报模型正在运行，开始计算时间 :", t1)
 
 # 定义路径
 file = r'\\10.157.2.94\临时文件\指环王数据每日制作最终版.xlsx'
@@ -234,7 +231,7 @@ group by
 	a.分部名称
 	'''
 
-# 零售20年10月数据
+# 当月top&3c零售统计
 sql_202010retail = '''
 select c.中心, sum(a.总价)/10000 as 销额（万元）, 
 sum(a.数量) as 销量（台）,
@@ -252,7 +249,9 @@ where a.创建时间 between date_add(curdate(),interval -day(curdate())+1 day) 
 and (b.类别 ='3C' or b.类别='TOP') 
 group by c.中心
 '''
-sql_mmp_last_month='''
+
+# 去年同期top&3c零售统计
+sql_mmp_last_month = '''
 select c.中心, sum(a.总价)/10000 as 销额（万元）, 
 sum(a.数量) as 销量（台）,
 sum(a.总价)/sum(a.数量) as 销售均价（元）
@@ -269,6 +268,8 @@ and date_add(date_add(curdate(),interval -1 month),interval -1 day)
 and (b.类别 ='3C' or b.类别='TOP') 
 group by c.中心
 '''
+
+# 中心分系统top 3c零售数据
 sql_202010top3c = ''' select c.中心,b.类别 , sum(a.总价)/10000 as 销额（万元）, 
             sum(a.数量) as 销量（台）,
             sum(a.总价)/sum(a.数量) as 销售均价（元）,
@@ -284,6 +285,7 @@ sql_202010top3c = ''' select c.中心,b.类别 , sum(a.总价)/10000 as 销额�
             where a.创建时间 between date_add(curdate(),interval -day(curdate())+1 day) and date_add(curdate(),interval -1 day)
             and (b.类别 ='3C' or b.类别='TOP') 
             group by c.中心,b.类别 '''
+
 sql_202010date = '''
 select c.中心,a.创建时间 , sum(a.总价)/10000 as 销额（万元）, 
             sum(a.数量) as 销量（台）,
@@ -299,7 +301,7 @@ select c.中心,a.创建时间 , sum(a.总价)/10000 as 销额（万元）,
             and b.门店二级分类 =a.门店二级分类
             where  datediff(NOW(), a.创建时间) <= 4
             and (b.类别 ='3C' or b.类别='TOP') 
-            group by c.中心,a.创建时间'''
+            group by c.中心,a.创建时间 '''
 
 sql_201910retail = '''
 select c.中心, sum(a.总价)/10000 as 销额（万元）, 
@@ -318,6 +320,7 @@ select c.中心, sum(a.总价)/10000 as 销额（万元）,
             and (b.类别 ='3C' or b.类别='TOP') 
             group by c.中心
 '''
+
 # mmp零售
 sql_mmp2 = '''
 select a.center_group as 分组, a.center_name as 中心, a.target_score as 目标, b.score_1 as 积分, b.number1 as 台数, b.number2 as 高端台数
@@ -353,6 +356,7 @@ group by c.center) b on
 a.center_name = b.center
 where center = '新疆';
     '''
+
 # 19年mmp零售
 sql_19mmp_retail = '''
 select a.center_group as 分组, a.center_name as 中心, a.target_score as 目标, b.score_1 as 积分, b.number1 as 台数, b.number2 as 高端台数
@@ -388,6 +392,7 @@ group by c.center) b on
 a.center_name = b.center
 where center = '新疆';
     '''
+
 # 渠道业务
 sql_mmp3 = '''select
     a.门店一级分类,
@@ -486,6 +491,7 @@ where
     and year(a.创建时间) = '2020'
 group by
     a.门店一级分类; '''
+
 # 代理渠道
 sql_mmp4 = '''
 select
@@ -891,13 +897,78 @@ a.center_name = b.center
 where center = '新疆'
 '''
 
+# 去年零售同期
+sql_quniantongqilingshou = '''
+select c.中心, sum(a.总价)/10000 as 销额（万元）, 
+sum(a.数量) as 销量（台）,
+sum(a.总价)/sum(a.数量) as 销售均价（元）,
+sum(d.是否重点机型*a.数量) as 重点机型达成（台）
+from ods.mmp零售数据全量 a
+left join dim.连锁高端机配置表 d 
+on d.编码 = a.商品编码 
+inner join dim.中心分部配置 c on
+c.分部名称 = a.分部名称
+inner join dim.零售门店分类 b
+on b.门店一级分类 =a.门店一级分类 
+and b.门店二级分类 =a.门店二级分类
+where a.创建时间 between '2019-10-25' and date_add(date_add(curdate(),interval -1 year),interval -day(curdate())+3 day)
+and (b.类别 ='3C' or b.类别='TOP') 
+group by c.中心; '''
+
+# 今年零售
+sql_jinnianlingshou = '''
+select c.中心, sum(a.总价)/10000 as 销额（万元）, 
+sum(a.数量) as 销量（台）,
+sum(a.总价)/sum(a.数量) as 销售均价（元）,
+sum(d.是否重点机型*a.数量) as 重点机型达成（台）
+from ods.mmp零售数据全量 a
+left join dim.连锁高端机配置表 d 
+on d.编码 = a.商品编码 
+inner join dim.中心分部配置 c on
+c.分部名称 = a.分部名称
+inner join dim.零售门店分类 b
+on b.门店一级分类 =a.门店一级分类 
+and b.门店二级分类 =a.门店二级分类
+where a.创建时间 between '2020-10-23' and now() 
+and (b.类别 ='3C' or b.类别='TOP') 
+group by c.中心; '''
+
+# colmo专项
+sql_colmozhuangxiang = '''
+select c.中心, sum(a.总价)/10000 as 销额（万元）, 
+sum(a.数量) as 销量（台）,
+sum(a.总价)/sum(a.数量) as 销售均价（元）,
+sum(d.是否重点机型*a.数量) as 重点机型达成（台）
+from ods.mmp零售数据全量 a
+left join dim.连锁高端机配置表 d 
+on d.编码 = a.商品编码 
+inner join dim.中心分部配置 c on
+c.分部名称 = a.分部名称
+where ods.当月月累(a.创建时间) and d.备注 ='COLMO'
+group by c.中心;
+'''
+# 太空舱专项
+sql_taikongcangzhuangxiang = '''
+select c.中心, sum(a.总价)/10000 as 销额（万元）, 
+sum(a.数量) as 销量（台）,
+sum(a.总价)/sum(a.数量) as 销售均价（元）,
+sum(d.是否重点机型*a.数量) as 重点机型达成（台）
+from ods.mmp零售数据全量 a
+left join dim.连锁高端机配置表 d 
+on d.编码 = a.商品编码 
+inner join dim.中心分部配置 c on
+c.分部名称 = a.分部名称
+where ods.当月月累(a.创建时间) and d.型号 in ('CLDG15T','CLGG15E')
+group by c.中心;
+'''
+
 # 连接正式数据库
 engine = create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
 
 
 # 写入多个sheet页需要使用ExcelWriter
 def write_excel(df, sheet_name):
-    book = load_workbook(file)
+    book = openpyxl.load_workbook(file)
     writer = pd.ExcelWriter(file, engine='openpyxl')
     writer.book = book
     writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
@@ -911,41 +982,78 @@ if not os.path.exists(file):
 
 # 读取并写入数据
 # df1=pd.read_sql(sql=sql_mmp, con=engine)
-# df2=pd.read_sql(sql=sql_channel, con=engine)
-df3 = pd.read_sql(sql=sql_202010retail, con=engine)
-df4 = pd.read_sql(sql=sql_201910retail, con=engine)
-df5 = pd.read_sql(sql=sql_mmp2, con=engine)
-df6 = pd.read_sql(sql=sql_mmp3, con=engine)
-df7 = pd.read_sql(sql=sql_mmp4, con=engine)
-df8 = pd.read_sql(sql=sql_202010top3c, con=engine)
-df9 = pd.read_sql(sql=sql_202010date, con=engine)
-df10 = pd.read_sql(sql=sql_channel_1, con=engine)
-df11 = pd.read_sql(sql=sql_channel_2, con=engine)
-df12 = pd.read_sql(sql=sql_channel_3, con=engine)
-df13 = pd.read_sql(sql=sql_mmp_last_month, con=engine)
-df14 = pd.read_sql(sql=sql_colmo, con=engine)
-df15 = pd.read_sql(sql=sql_19mmp_retail, con=engine)
-df16 = pd.read_sql(sql=sql_19channel_retail, con=engine)
-
-
 # write_excel(df=df1,sheet_name='mmp到人员')
+# df2=pd.read_sql(sql=sql_channel, con=engine)
 # write_excel(df=df2,sheet_name='渠道到人员')
+df3 = pd.read_sql(sql=sql_202010retail, con=engine)
 write_excel(df=df3, sheet_name='今年')
-write_excel(df=df4, sheet_name='去年')
-write_excel(df=df5, sheet_name='MMP')
-write_excel(df=df6, sheet_name='渠道分类')
-write_excel(df=df7, sheet_name='代理渠道')
-# print("零售日报模型运行完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-# print("指环王模型正在运行，开始计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-write_excel(df=df8, sheet_name='全月')
-write_excel(df=df9, sheet_name='近四天')
-write_excel(df=df10, sheet_name='今年代理渠道销售')
-write_excel(df=df11, sheet_name='去年代理渠道销售')
-write_excel(df=df12, sheet_name='上个月代理渠道销售')
-write_excel(df=df13, sheet_name='上个月mmp销售')
-write_excel(df=df14, sheet_name='colmo当月销售')
-write_excel(df=df15, sheet_name='19年MMP')
-write_excel(df=df16, sheet_name='19年代理渠道')
+print("零售日报-今年零售合计计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-t2 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-print("指环王模型运行完毕，结束计算时间 :", t2)
+df4 = pd.read_sql(sql=sql_201910retail, con=engine)
+write_excel(df=df4, sheet_name='去年')
+print("零售日报-去年零售合计计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df5 = pd.read_sql(sql=sql_mmp2, con=engine)
+write_excel(df=df5, sheet_name='MMP')
+print("指环王-MMP零售数据计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df6 = pd.read_sql(sql=sql_mmp3, con=engine)
+write_excel(df=df6, sheet_name='渠道分类')
+print("指环王-渠道分类计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df7 = pd.read_sql(sql=sql_mmp4, con=engine)
+write_excel(df=df7, sheet_name='代理渠道')
+print("指环王-代理渠道计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df8 = pd.read_sql(sql=sql_202010top3c, con=engine)
+write_excel(df=df8, sheet_name='全月')
+print("零售日报-全月零售数据计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df9 = pd.read_sql(sql=sql_202010date, con=engine)
+write_excel(df=df9, sheet_name='近四天')
+print("零售日报-近四天零售数据计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df10 = pd.read_sql(sql=sql_channel_1, con=engine)
+write_excel(df=df10, sheet_name='今年代理渠道销售')
+print("零售日报-今年代理渠道销售计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df11 = pd.read_sql(sql=sql_channel_2, con=engine)
+write_excel(df=df11, sheet_name='去年代理渠道销售')
+print("零售日报-去年代理渠道销售计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df12 = pd.read_sql(sql=sql_channel_3, con=engine)
+write_excel(df=df12, sheet_name='上个月代理渠道销售')
+print("零售日报-上个月代理渠道销售计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df13 = pd.read_sql(sql=sql_mmp_last_month, con=engine)
+write_excel(df=df13, sheet_name='上个月mmp销售')
+print("零售日报-上个月mmp销售计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df14 = pd.read_sql(sql=sql_colmo, con=engine)
+write_excel(df=df14, sheet_name='colmo当月销售')
+print("指环王-colmo当月销售，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df15 = pd.read_sql(sql=sql_19mmp_retail, con=engine)
+write_excel(df=df15, sheet_name='19年MMP')
+print("指环王-19年MMP计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df16 = pd.read_sql(sql=sql_19channel_retail, con=engine)
+write_excel(df=df16, sheet_name='19年代理渠道')
+print("指环王-19年代理渠道计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df17 = pd.read_sql(sql=sql_quniantongqilingshou, con=engine)
+write_excel(df=df17, sheet_name='去年零售同期')
+print("全球购物狂欢节-去年零售同期计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df18 = pd.read_sql(sql=sql_jinnianlingshou, con=engine)
+write_excel(df=df18, sheet_name='今年零售')
+print("全球购物狂欢节-今年零售计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df19 = pd.read_sql(sql=sql_colmozhuangxiang, con=engine)
+write_excel(df=df19, sheet_name='colmo专项')
+print("全球购物狂欢节-colmo专项计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df20 = pd.read_sql(sql=sql_taikongcangzhuangxiang, con=engine)
+write_excel(df=df20, sheet_name='太空舱专项')
+
+print("全球购物狂欢节-太空舱专项计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
