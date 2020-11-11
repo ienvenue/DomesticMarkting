@@ -31,6 +31,7 @@ from
             inner join ods.model_score b on a.商品编码 = b.merch_id
             inner join ods.area_center_zhihuanwang c on c.center_name = a.分部名称
         where
+        	a.创建时间 between '2020-08-28' and now() and 
             (
                 (
                     a.门店一级分类 in ('苏宁', '国美', 'TOP', '五星', '商超')
@@ -146,6 +147,7 @@ from
             inner join ods.model_score b on a.商品编码 = b.merch_id
             inner join ods.area_center_zhihuanwang c on c.center_name = a.分部名称
         where
+        	a.创建时间 between '2020-08-28' and now() and 
             a.门店一级分类 in ('苏宁', '国美', '五星', '商超')
             and a.门店二级分类 not in ('国美新零售', '苏宁零售云', '五星万镇通')
             and b.score_xinjiang > 0
@@ -158,7 +160,8 @@ where
 '''
 
 # 定义渠道到人员sql
-sql_channel = '''select
+sql_channel = '''   
+select
 	d.center as 中心,
 	d.卖方客户编码,
 	case  when d.品类 like '美的%' then '美的' else '小天鹅' end as 品牌,
@@ -176,6 +179,7 @@ from
 	inner join ods.area_center_zhihuanwang c on
 		c.center_name = a.中心名称
 	where
+		a.单据日期 between '2020-08-28' and now() and 
 		a.`卖方合作模式大类(CRM)/一级分类(CMDM)` in ('TOP',
 		'V200',
 		'代理商',
@@ -222,6 +226,7 @@ inner join ods.model_score b on
 inner join ods.area_center_zhihuanwang c on
 	c.center_name = a.分部名称
 where
+	a.创建时间 between '2020-08-28' and now() and 
 	a.门店一级分类 not in ( '苏宁',
 	'国美')
 	and c.center = '新疆'
@@ -229,7 +234,7 @@ where
 group by
 	c.center,
 	a.门店编码,
-	a.分部名称
+	a.分部名称;
 	'''
 
 # 当月top&3c零售统计
@@ -965,16 +970,13 @@ group by c.中心;
 
 # 连接正式数据库
 engine = create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
-
-
+book = openpyxl.load_workbook(file)
+writer = pd.ExcelWriter(file, engine='openpyxl')
+writer.book = book
 # 写入多个sheet页需要使用ExcelWriter
 def write_excel(df, sheet_name):
-    book = openpyxl.load_workbook(file)
-    writer = pd.ExcelWriter(file, engine='openpyxl')
-    writer.book = book
     writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
     df.to_excel(writer, sheet_name, index=False)
-    writer.save()
 
 
 # 如果文件不存在，则创建
@@ -982,10 +984,14 @@ if not os.path.exists(file):
     os.system(r"touch {}".format(file))
 
 # 读取并写入数据
-# df1=pd.read_sql(sql=sql_mmp, con=engine)
-# write_excel(df=df1,sheet_name='mmp到人员')
-# df2=pd.read_sql(sql=sql_channel, con=engine)
-# write_excel(df=df2,sheet_name='渠道到人员')
+df1=pd.read_sql(sql=sql_mmp, con=engine)
+write_excel(df=df1,sheet_name='mmp到人员')
+print("指环王-mmp到门店，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+df2=pd.read_sql(sql=sql_channel, con=engine)
+write_excel(df=df2,sheet_name='渠道到人员')
+print("指环王-渠道到门店，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
 df3 = pd.read_sql(sql=sql_202010retail, con=engine)
 write_excel(df=df3, sheet_name='今年')
 print("零售日报-今年零售合计计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
@@ -1058,3 +1064,5 @@ df20 = pd.read_sql(sql=sql_taikongcangzhuangxiang, con=engine)
 write_excel(df=df20, sheet_name='太空舱专项')
 
 print("全球购物狂欢节-太空舱专项计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+writer.save()
