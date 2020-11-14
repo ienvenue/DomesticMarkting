@@ -1,4 +1,5 @@
 import time
+from win32com.client import Dispatch
 import pandas as pd
 from sqlalchemy import create_engine
 
@@ -23,7 +24,19 @@ def csv2db(path, tablename, type, cols, rownum):
     print(tablename + "导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
 
+def just_open(path):
+    """
+    打开文件并保存推出
+    """
+    app = Dispatch("Excel.Application")
+    app.Visible = False
+    content = app.Workbooks.Open(path)
+    content.Save()
+    content.Close()
+
+
 if __name__ == '__main__':
+    print("转化开始时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     fahuo_cols = ['客户编码', '客户名称', '客户类型', '直发标志', '营销大类', '单据类型', '单据号', '销售区域', '营销中心', '营销中心名称', '账户', '单据日期', '录入日期',
                   '发货日期', '结算日期', '对账日期', '审核标识', '结算标识', '签收日期', '签收标记', '发票日期', '发票号', '开票单位', '发货仓库编码', '发货仓库名称',
                   '收货仓库编码', '收货仓库名称', '工程机标识', '事业部客户', 'ERP OU名称', '产品编码', '产品名称', '品牌', '营销小类', '产品形态', '定频/变频',
@@ -35,4 +48,10 @@ if __name__ == '__main__':
                   '签收系统', '产品竞争属性', '转采购标志', '转采购信息', '新中心编码', '新中心名称', '划拨中心编码', '划拨中心名称', '划拨客户编码', '划拨客户名称', '划拨比例',
                   '中间费用（费用金额）', '中间折扣（费用率）', '物流处理类型', 'ERP应收发票号', '数据来源', '外部系统单据号', '支付方式', '合同差异开单', '支付来源',
                   '经营渠道类型', 'PO接收标识', 'PO接收日期']
-    csv2db(path=r'E:\Share\每日导数\report.csv', tablename='发货数据明细', type='replace', cols=fahuo_cols, rownum=0)
+    path_csv = r'E:\Share\每日导数\11.12cims.csv'
+    path_xlsx = r'E:\Share\每日导数\11.12cims.xlsx'
+    csv_temp_df = pd.read_csv(path_csv, header=0, usecols=fahuo_cols, encoding="gbk")
+    csv_temp_df.to_excel(path_xlsx, sheet_name='cims')
+    just_open(path_xlsx)
+    excel2db(path_xlsx, tablename='发货数据明细', sheetname='cims', type='append', cols=fahuo_cols,
+             rownum=0)

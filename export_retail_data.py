@@ -8,7 +8,7 @@ print("零售日报和指环王模型计算中，开始计算时间 :", time.str
 # 定义路径
 file = r'\\10.157.2.94\临时文件\指环王数据每日制作最终版.xlsx'
 
-# 定义mmp到人员sql
+# 定义mmp到门店sql
 sql_mmp = '''select
     a.center_name as 中心,
     b.门店编码,
@@ -127,8 +127,8 @@ union
 all
 select
 	a.center_name as 中心,
+	    b.门店编码,
 case  when b.分部名称 like '美的%' then '美的' else '小天鹅' end as 品牌,
-    b.门店编码,
     b.积分 as 积分,
     b.台数 as 台数,
     b.高端结构机台数 as 高端台数
@@ -159,11 +159,12 @@ where
     center = '新疆';
 '''
 
-# 定义渠道到人员sql
+# 定义渠道到门店sql
 sql_channel = '''   
 select
 	d.center as 中心,
 	d.卖方客户编码,
+	d.门店编码,
 	case  when d.品类 like '美的%' then '美的' else '小天鹅' end as 品牌,
 	sum(d.score*d.`开单数量`) as 积分,
 	sum(d.`开单数量`) as 台数,
@@ -171,7 +172,7 @@ select
 from
 	(
 	select
-		c.center, a.卖方客户编码,a.品类,b.score, a.开单数量,b.is_jiegouji 
+		c.center, a.卖方客户编码,a.门店编码,a.品类,b.score, a.开单数量,b.is_jiegouji 
 	from
 		ods.二级代理渠道零售数据 a
 	inner join ods.model_score b on
@@ -196,24 +197,27 @@ from
 		and a.卖方客户名称 not like '已失效%'
 union all
 	select
-		c.center,  a.卖方客户编码,a.品类,b.score, a.开单数量,b.is_jiegouji 
+		c.center,  a.卖方客户编码,a.门店编码,a.品类,b.score, a.开单数量,b.is_jiegouji 
 	from
 		ods.一级代理渠道零售数据 a
 	inner join ods.model_score b on
 		a.商品编码 = b.merch_id
 		and b.score >0
-		and a.卖方客户名称 not like '已失效%' #新增剔除已失效客户
+		and a.卖方客户名称 not like '已失效%' 
 	inner join ods.area_center_zhihuanwang c on
-		c.center_name = a.中心名称) d
+		c.center_name = a.中心名称
+		where a.单据日期 between '2020-08-28' and now() ) d
 where
 	d.center <> '新疆'
 group by
 	d.center,
 		d.卖方客户编码,
 	d.品类
+	,d.门店编码
 union all
 select
 	c.center as 中心,
+	'' as 卖方客户编码,
 	 a.门店编码,
      case  when a.分部名称 like '美的%' then '美的' else '小天鹅' end as 品牌,
 	sum(b.score_xinjiang * a.数量) as 积分,
@@ -234,7 +238,7 @@ where
 group by
 	c.center,
 	a.门店编码,
-	a.分部名称;
+	a.分部名称
 	'''
 
 # 当月top&3c零售统计
@@ -917,7 +921,7 @@ c.分部名称 = a.分部名称
 inner join dim.零售门店分类 b
 on b.门店一级分类 =a.门店一级分类 
 and b.门店二级分类 =a.门店二级分类
-where a.创建时间 between '2019-10-25' and date_add(date_add(curdate(),interval -1 year),interval -day(curdate())+3 day)
+where a.创建时间 between '2019-10-25' and date_add(date_add(curdate(),interval -1 year),interval +1 day)
 and (b.类别 ='3C' or b.类别='TOP') 
 group by c.中心; '''
 
