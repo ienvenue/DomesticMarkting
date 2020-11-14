@@ -12,8 +12,8 @@ del_sql_level2 = 'delete from ods.二级代理渠道零售数据  a where ods.�
 # 每月删除一次
 # del_sql_mmp = 'delete from ods.mmp零售数据全量 a where ods.当月月累(a.创建时间) '
 
-print('删除{}行'.format(cur.execute(del_sql_level1)))
-print('删除{}行'.format(cur.execute(del_sql_level2)))
+print('一级删除{}行'.format(cur.execute(del_sql_level1)))
+print('二级删除{}行'.format(cur.execute(del_sql_level2)))
 # print('删除{}行'.format(cur.execute(del_sql_mmp)))
 
 conn.commit()
@@ -41,19 +41,19 @@ sample_use_col = ['导购编码', '导购员姓名', '导购员手机', '分部'
 engine = create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
 
 print("二级渠道数据导入开始时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-channel_file = r'E:\Share\每日导数\二级1031(1).xlsx'
+channel_file = r'E:\Share\每日导数\二级1114.xlsx'
 channel_df = pd.read_excel(channel_file, sheet_name='   渠道出库明细', header=1, usecols=channel_use_col)
 channel_df.to_sql('二级代理渠道零售数据', con=engine, if_exists='append', index=False)
 print("二级渠道数据导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), '共插入{}行'.format(channel_df.shape[0]))
 
 print("一级渠道数据导入开始时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-channel_file = r'E:\Share\每日导数\一级1031(1).xlsx'
+channel_file = r'E:\Share\每日导数\一级1114.xlsx'
 channel_df = pd.read_excel(channel_file, sheet_name='   渠道出库明细', header=1, usecols=channel_use_col)
 channel_df.to_sql('一级代理渠道零售数据', con=engine, if_exists='append', index=False)
 print("一级渠道数据导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), '共插入{}行'.format(channel_df.shape[0]))
 
 print("mmp零售数据全量导入开始时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-mmp_file = r'\\10.157.2.94\临时文件\10.1-10.30.xlsx'
+mmp_file = r'E:\Share\每日导数\MMP11.13.xlsx'
 mmp_df = pd.read_excel(mmp_file, sheet_name='Sheet0', header=0, usecols=mmp_use_col)
 mmp_df.to_sql('mmp零售数据全量', con=engine, if_exists='append', index=False)
 print("mmp零售数据全量导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), '共插入{}行'.format(mmp_df.shape[0]))
