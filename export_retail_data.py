@@ -3,12 +3,12 @@ import time
 import pandas as pd
 import openpyxl
 from sqlalchemy import create_engine
+import zhihuanwan_log as zl
 
-print("零售日报和指环王模型计算中，开始计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 # 定义路径
 file = r'\\10.157.2.94\临时文件\指环王数据每日制作最终版.xlsx'
 
-# 定义mmp到门店sql
+# 定到门店sql
 sql_mmp = '''select
     a.center_name as 中心,
     b.门店编码,
@@ -921,7 +921,7 @@ c.分部名称 = a.分部名称
 inner join dim.零售门店分类 b
 on b.门店一级分类 =a.门店一级分类 
 and b.门店二级分类 =a.门店二级分类
-where a.创建时间 between '2019-10-25' and date_add(date_add(curdate(),interval -1 year),interval +1 day)
+where  ods.去年月同期(a.创建时间)
 and (b.类别 ='3C' or b.类别='TOP') 
 group by c.中心; '''
 
@@ -939,7 +939,7 @@ c.分部名称 = a.分部名称
 inner join dim.零售门店分类 b
 on b.门店一级分类 =a.门店一级分类 
 and b.门店二级分类 =a.门店二级分类
-where a.创建时间 between '2020-10-23' and now() 
+where  ods.当月月累(a.创建时间)
 and (b.类别 ='3C' or b.类别='TOP') 
 group by c.中心; '''
 
@@ -973,100 +973,111 @@ group by c.中心;
 '''
 
 # 连接正式数据库
+# 写入多个sheet页需要使用ExcelWriter
 engine = create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
 book = openpyxl.load_workbook(file)
 writer = pd.ExcelWriter(file, engine='openpyxl')
 writer.book = book
-# 写入多个sheet页需要使用ExcelWriter
+
 def write_excel(df, sheet_name):
     writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
     df.to_excel(writer, sheet_name, index=False)
 
 
-# 如果文件不存在，则创建
-if not os.path.exists(file):
-    os.system(r"touch {}".format(file))
 
-# 读取并写入数据
-df1=pd.read_sql(sql=sql_mmp, con=engine)
-write_excel(df=df1,sheet_name='mmp到人员')
-print("指环王-mmp到门店，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+def export_data():
+    zl.logger.warning("零售日报和指环王模型计算中，开始计算时间 :"+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    # 如果文件不存在，则创建
+    if not os.path.exists(file):
+        os.system(r"touch {}".format(file))
 
-df2=pd.read_sql(sql=sql_channel, con=engine)
-write_excel(df=df2,sheet_name='渠道到人员')
-print("指环王-渠道到门店，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    sheet1=book["mmp到人员"]
+    book.remove(sheet1)
+    sheet2 = book["渠道到人员"]
+    book.remove(sheet2)
+    # 读取并写入数据
+    df1=pd.read_sql(sql=sql_mmp, con=engine)
+    write_excel(df=df1,sheet_name='mmp到人员')
+    zl.logger.warning("指环王-mmp到门店，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df3 = pd.read_sql(sql=sql_202010retail, con=engine)
-write_excel(df=df3, sheet_name='今年')
-print("零售日报-今年零售合计计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df2=pd.read_sql(sql=sql_channel, con=engine)
+    write_excel(df=df2,sheet_name='渠道到人员')
+    zl.logger.warning("指环王-渠道到门店，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df4 = pd.read_sql(sql=sql_201910retail, con=engine)
-write_excel(df=df4, sheet_name='去年')
-print("零售日报-去年零售合计计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df3 = pd.read_sql(sql=sql_202010retail, con=engine)
+    write_excel(df=df3, sheet_name='今年')
+    zl.logger.warning("零售日报-今年零售合计计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df5 = pd.read_sql(sql=sql_mmp2, con=engine)
-write_excel(df=df5, sheet_name='MMP')
-print("指环王-MMP零售数据计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df4 = pd.read_sql(sql=sql_201910retail, con=engine)
+    write_excel(df=df4, sheet_name='去年')
+    zl.logger.warning("零售日报-去年零售合计计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df6 = pd.read_sql(sql=sql_mmp3, con=engine)
-write_excel(df=df6, sheet_name='渠道分类')
-print("指环王-渠道分类计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df5 = pd.read_sql(sql=sql_mmp2, con=engine)
+    write_excel(df=df5, sheet_name='MMP')
+    zl.logger.warning("指环王-MMP零售数据计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df7 = pd.read_sql(sql=sql_mmp4, con=engine)
-write_excel(df=df7, sheet_name='代理渠道')
-print("指环王-代理渠道计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df6 = pd.read_sql(sql=sql_mmp3, con=engine)
+    write_excel(df=df6, sheet_name='渠道分类')
+    zl.logger.warning("指环王-渠道分类计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df8 = pd.read_sql(sql=sql_202010top3c, con=engine)
-write_excel(df=df8, sheet_name='全月')
-print("零售日报-全月零售数据计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df7 = pd.read_sql(sql=sql_mmp4, con=engine)
+    write_excel(df=df7, sheet_name='代理渠道')
+    zl.logger.warning("指环王-代理渠道计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df9 = pd.read_sql(sql=sql_202010date, con=engine)
-write_excel(df=df9, sheet_name='近四天')
-print("零售日报-近四天零售数据计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df8 = pd.read_sql(sql=sql_202010top3c, con=engine)
+    write_excel(df=df8, sheet_name='全月')
+    zl.logger.warning("零售日报-全月零售数据计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df10 = pd.read_sql(sql=sql_channel_1, con=engine)
-write_excel(df=df10, sheet_name='今年代理渠道销售')
-print("零售日报-今年代理渠道销售计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df9 = pd.read_sql(sql=sql_202010date, con=engine)
+    write_excel(df=df9, sheet_name='近四天')
+    zl.logger.warning("零售日报-近四天零售数据计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df11 = pd.read_sql(sql=sql_channel_2, con=engine)
-write_excel(df=df11, sheet_name='去年代理渠道销售')
-print("零售日报-去年代理渠道销售计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df10 = pd.read_sql(sql=sql_channel_1, con=engine)
+    write_excel(df=df10, sheet_name='今年代理渠道销售')
+    zl.logger.warning("零售日报-今年代理渠道销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df12 = pd.read_sql(sql=sql_channel_3, con=engine)
-write_excel(df=df12, sheet_name='上个月代理渠道销售')
-print("零售日报-上个月代理渠道销售计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df11 = pd.read_sql(sql=sql_channel_2, con=engine)
+    write_excel(df=df11, sheet_name='去年代理渠道销售')
+    zl.logger.warning("零售日报-去年代理渠道销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df13 = pd.read_sql(sql=sql_mmp_last_month, con=engine)
-write_excel(df=df13, sheet_name='上个月mmp销售')
-print("零售日报-上个月mmp销售计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df12 = pd.read_sql(sql=sql_channel_3, con=engine)
+    write_excel(df=df12, sheet_name='上个月代理渠道销售')
+    zl.logger.warning("零售日报-上个月代理渠道销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df14 = pd.read_sql(sql=sql_colmo, con=engine)
-write_excel(df=df14, sheet_name='colmo当月销售')
-print("指环王-colmo当月销售，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df13 = pd.read_sql(sql=sql_mmp_last_month, con=engine)
+    write_excel(df=df13, sheet_name='上个月mmp销售')
+    zl.logger.warning("零售日报-上个月mmp销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df15 = pd.read_sql(sql=sql_19mmp_retail, con=engine)
-write_excel(df=df15, sheet_name='19年MMP')
-print("指环王-19年MMP计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    # df14 = pd.read_sql(sql=sql_colmo, con=engine)
+    # write_excel(df=df14, sheet_name='colmo当月销售')
+    # zl.logger.warning("指环王-colmo当月销售，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df16 = pd.read_sql(sql=sql_19channel_retail, con=engine)
-write_excel(df=df16, sheet_name='19年代理渠道')
-print("指环王-19年代理渠道计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df15 = pd.read_sql(sql=sql_19mmp_retail, con=engine)
+    write_excel(df=df15, sheet_name='19年MMP')
+    zl.logger.warning("指环王-19年MMP计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df17 = pd.read_sql(sql=sql_quniantongqilingshou, con=engine)
-write_excel(df=df17, sheet_name='去年零售同期')
-print("全球购物狂欢节-去年零售同期计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df16 = pd.read_sql(sql=sql_19channel_retail, con=engine)
+    write_excel(df=df16, sheet_name='19年代理渠道')
+    zl.logger.warning("指环王-19年代理渠道计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df18 = pd.read_sql(sql=sql_jinnianlingshou, con=engine)
-write_excel(df=df18, sheet_name='今年零售')
-print("全球购物狂欢节-今年零售计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df17 = pd.read_sql(sql=sql_quniantongqilingshou, con=engine)
+    write_excel(df=df17, sheet_name='去年零售同期')
+    zl.logger.warning("去年零售同期计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df19 = pd.read_sql(sql=sql_colmozhuangxiang, con=engine)
-write_excel(df=df19, sheet_name='colmo专项')
-print("全球购物狂欢节-colmo专项计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    df18 = pd.read_sql(sql=sql_jinnianlingshou, con=engine)
+    write_excel(df=df18, sheet_name='今年零售')
+    zl.logger.warning("今年零售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-df20 = pd.read_sql(sql=sql_taikongcangzhuangxiang, con=engine)
-write_excel(df=df20, sheet_name='太空舱专项')
+    # df19 = pd.read_sql(sql=sql_colmozhuangxiang, con=engine)
+    # write_excel(df=df19, sheet_name='colmo专项')
+    # zl.logger.warning("全球购物狂欢节-colmo专项计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-print("全球购物狂欢节-太空舱专项计算完毕，结束计算时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    # df20 = pd.read_sql(sql=sql_taikongcangzhuangxiang, con=engine)
+    # write_excel(df=df20, sheet_name='太空舱专项')
+    # zl.logger.warning("全球购物狂欢节-太空舱专项计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-writer.save()
+    writer.save()
+    zl.logger.warning("已完成，时间 :" + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+if __name__ == '__main__':
+    export_data()
