@@ -15,10 +15,11 @@ if __name__ == '__main__':
     # 定义数据库连接
     engine = create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/ods")
     # 设定文件路径
-    path_weishen_csv = r'D:\Code\jupyter\xlsx\未审.csv'
-    path_weishen_xlsx = r'D:\Code\jupyter\xlsx\未审.xlsx'
-    path_kaiti_xlsx = r"D:\Code\jupyter\xlsx\开提.xls"
-    path_gome_customer = r"D:\Code\jupyter\xlsx\国美客户配置表.xlsx"
+    path_weishen_csv = r'\\10.157.2.94\共享文件\Data\GomeData\未审.csv'
+    path_weishen_xlsx = r'\\10.157.2.94\共享文件\Data\GomeData\未审.xlsx'
+    path_kaiti_xlsx = r"\\10.157.2.94\共享文件\Data\GomeData\开提.xls"
+    path_gome_customer = r"\\10.157.2.94\共享文件\Data\GomeData\国美客户配置表.xlsx"
+    path_gome_unplanned = r"\\10.157.2.94\共享文件\Data\GomeData\国美规划外型谱.xlsx"
     # 定义字段
     weishen_cols = ["订单号", "单据状态", "销售公司名称", "经销商名称", "产品编码", "产品名称",
                     "订单未满足数量", "计划订单号", "计划订单周期", "计划订单状态", "划拨中心编码",
@@ -45,6 +46,7 @@ if __name__ == '__main__':
                                                 replace("858D3A13", "DGH-117X6D").
                                                 replace("858D4A17", " DGH-117X6DZ"))
     df_weishen["未发数量"] = df_weishen["未发数量"].map(lambda x: abs(x))
+    df_weishen["状态"]="未审"
     # 开提数据导入和关联中心和国美客户
     df_kaiti_temp = pd.read_excel(path_kaiti_xlsx, header=0, usecols=kaiti_cols, sheet_name='sheet1')
     df_kaiti = df_kaiti_temp.merge(df_center, how='inner', left_on="划拨中心名称", right_on="分部名称").\
@@ -52,6 +54,11 @@ if __name__ == '__main__':
     df_kaiti["产品名称"] = df_kaiti["产品名称"].map(lambda x: x.split(" ", 1)[0].
                                             replace("858D3A13", "DGH-117X6D").
                                             replace("858D4A17", " DGH-117X6DZ"))
+    df_kaiti["状态"]="开提"
     # 整合未审和开提，生成订单明细表写入数据库
-    result = df_kaiti[["中心", "未发数量", "产品名称"]].append(df_weishen[["中心", "未发数量", "产品名称"]]).fillna(0)
+    result = df_kaiti[["中心", "未发数量", "产品名称","状态"]].append(df_weishen[["中心", "未发数量", "产品名称","状态"]]).fillna(0)
     result.to_sql('国美订单明细', engine, if_exists='replace', index_label='自增主键')
+
+    # 维度拆分:订单分解成未审开提
+    # 指标新增：库龄超过45天或者超过90天的数量
+    # 指标新增：库存缺口，将4倍周销-库存金额
