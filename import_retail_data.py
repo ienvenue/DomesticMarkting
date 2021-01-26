@@ -29,7 +29,7 @@ def del_data(df, tablename):
     if tablename == 'mmp零售数据全量':
         col = '创建时间'
     else:
-        col = '单据日期'
+        col = '出库确认日期'
     end_date = df[col].max()
     start_date = df[col].min()
     sql = '''
