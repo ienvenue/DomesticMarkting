@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 import zhihuanwan_log as zl
 
 # 定义路径
-file = r'\\10.157.2.94\临时文件\指环王数据每日制作最终版.xlsx'
+file = r'\\10.157.2.94\临时文件\指环王数据每日制作11.24.xlsx'
 
 # 定到门店sql
 sql_mmp = '''select
@@ -31,7 +31,7 @@ from
             inner join ods.model_score b on a.商品编码 = b.merch_id
             inner join ods.area_center_zhihuanwang c on c.center_name = a.分部名称
         where
-        	a.创建时间 between '2020-08-28' and now() and 
+        	a.创建时间 between '2020-08-28' and '2020-11-24' and 
             (
                 (
                     a.门店一级分类 in ('苏宁', '国美', 'TOP', '五星', '商超')
@@ -147,7 +147,7 @@ from
             inner join ods.model_score b on a.商品编码 = b.merch_id
             inner join ods.area_center_zhihuanwang c on c.center_name = a.分部名称
         where
-        	a.创建时间 between '2020-08-28' and now() and 
+        	a.创建时间 between '2020-08-28' and '2020-11-24' and 
             a.门店一级分类 in ('苏宁', '国美', '五星', '商超')
             and a.门店二级分类 not in ('国美新零售', '苏宁零售云', '五星万镇通')
             and b.score_xinjiang > 0
@@ -180,7 +180,7 @@ from
 	inner join ods.area_center_zhihuanwang c on
 		c.center_name = a.中心名称
 	where
-		a.单据日期 between '2020-08-28' and now() and 
+		a.单据日期 between '2020-08-28' and '2020-11-24' and 
 		a.`卖方合作模式大类(CRM)/一级分类(CMDM)` in ('TOP',
 		'V200',
 		'代理商',
@@ -206,7 +206,7 @@ union all
 		and a.卖方客户名称 not like '已失效%' 
 	inner join ods.area_center_zhihuanwang c on
 		c.center_name = a.中心名称
-		where a.单据日期 between '2020-08-28' and now() ) d
+		where a.单据日期 between '2020-08-28' and '2020-11-24' ) d
 where
 	d.center <> '新疆'
 group by
@@ -230,7 +230,7 @@ inner join ods.model_score b on
 inner join ods.area_center_zhihuanwang c on
 	c.center_name = a.分部名称
 where
-	a.创建时间 between '2020-08-28' and now() and 
+	a.创建时间 between '2020-08-28' and '2020-11-24' and 
 	a.门店一级分类 not in ( '苏宁',
 	'国美')
 	and c.center = '新疆'
@@ -309,7 +309,7 @@ select c.中心,a.创建时间 , sum(a.总价)/10000 as 销额（万元）,
             inner join dim.零售门店分类 b
             on b.门店一级分类 =a.门店一级分类 
             and b.门店二级分类 =a.门店二级分类
-            where  datediff(NOW(), a.创建时间) <= 4
+            where  datediff('2020-11-24', a.创建时间) <= 4
             and (b.类别 ='3C' or b.类别='TOP') 
             group by c.中心,a.创建时间 '''
 
@@ -346,7 +346,7 @@ and a.门店二级分类 not in ('国美新零售', '苏宁零售云', '五星�
 -- 9.29新增v200与部分直营门店
 or (a.门店编码 in ('S00081607', 'S00081632', 'S00081635', 'S00081648', 'S00082093', 'S00091085', 'S00215530', 'S00089426', 'S00081003', 'S00081004', 'S00087008', 'S00191565', 'S00204520', 'S00081031', 'S00081155', 'S00090191', 'S00195186', 'S00081080', 'S00081541', 'S00090768', 'S00090769', 'S00090774', 'S00084355', 'S00084376', 'S00084392', 'S00084393', 'S00081818', 'S00084600', 'S00084648', 'S00078945', 'S00081418', 'S00081424', 'S00081437', 'S00068629', 'S00068639', 'S00013902', 'S00036059', 'S00036060', 'S00102010', 'S00081706', 'S00203272', 'S00081227', 'S00081228', 'S00083873', 'S00014418', 'S00084297', 'S00084755', 'S00088712', 'S00095896', 'S00081376', 'S00081383', 'S00081407', 'S00181472', 'S00239250', 'S00081394', 'S00081411', 'S00081701', 'S00082875', 'S00252523', 'S00081628', 'S00081695', 'S00081702', 'S00081714', 'S00081717', 'S00082886', 'S00253325', 'S00260399', 'S00023693', 'S00076764', 'S00095292', 'S00048922', 'S00270654', 'S00280139')))
 and b.score>0
-and year(a.创建时间) = '2020' 
+and a.创建时间 between '2020-08-28' and '2020-11-24' 
 group by c.center) b on
 a.center_name = b.center
 where center <> '新疆'
@@ -361,7 +361,7 @@ c.center_name = a.分部名称
 where a.门店一级分类 in ('苏宁', '国美', '五星', '商超')
 and a.门店二级分类 not in ('国美新零售', '苏宁零售云', '五星万镇通')
 and b.score_xinjiang >0
-and year(a.创建时间) = '2020'
+and a.创建时间 between '2020-08-28' and '2020-11-24'
 group by c.center) b on
 a.center_name = b.center
 where center = '新疆';
@@ -498,7 +498,7 @@ where
         )
     )
     and b.score > 0
-    and year(a.创建时间) = '2020'
+    and a.创建时间 between '2020-08-28' and '2020-11-24'
 group by
     a.门店一级分类; '''
 
@@ -520,7 +520,7 @@ from
 	inner join ods.area_center_zhihuanwang c on
 		c.center_name = a.中心名称
 	where
-	  year(a.单据日期)='2020'  and
+	  a.单据日期 between '2020-08-28' and '2020-11-24'   and
 		a.`卖方合作模式大类(CRM)/一级分类(CMDM)` in ('TOP',
 		'V200',
 		'代理商',
@@ -546,7 +546,7 @@ union all
 		and a.卖方客户名称 not like '已失效%' -- 新增剔除已失效客户
 	inner join ods.area_center_zhihuanwang c on
 		c.center_name = a.中心名称
-		where  year(a.单据日期)='2020' ) d
+		where  a.单据日期 between '2020-08-28' and '2020-11-24'  ) d
 where
 	d.center <> '新疆'
 group by
@@ -568,7 +568,7 @@ where
 	'国美')
 	and c.center = '新疆'
 	and b.score_xinjiang >0
-	and year(a.创建时间)='2020'
+	and a.创建时间 between '2020-08-28' and '2020-11-24'
 group by
 	c.center
 	'''
@@ -1032,41 +1032,41 @@ def export_data():
     write_excel(df=df9, sheet_name='近四天')
     zl.logger.warning("零售日报-近四天零售数据计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-    df10 = pd.read_sql(sql=sql_channel_1, con=engine)
-    write_excel(df=df10, sheet_name='今年代理渠道销售')
-    zl.logger.warning("零售日报-今年代理渠道销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    # df10 = pd.read_sql(sql=sql_channel_1, con=engine)
+    # write_excel(df=df10, sheet_name='今年代理渠道销售')
+    # zl.logger.warning("零售日报-今年代理渠道销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-    df11 = pd.read_sql(sql=sql_channel_2, con=engine)
-    write_excel(df=df11, sheet_name='去年代理渠道销售')
-    zl.logger.warning("零售日报-去年代理渠道销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    # df11 = pd.read_sql(sql=sql_channel_2, con=engine)
+    # write_excel(df=df11, sheet_name='去年代理渠道销售')
+    # zl.logger.warning("零售日报-去年代理渠道销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-    df12 = pd.read_sql(sql=sql_channel_3, con=engine)
-    write_excel(df=df12, sheet_name='上个月代理渠道销售')
-    zl.logger.warning("零售日报-上个月代理渠道销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    # df12 = pd.read_sql(sql=sql_channel_3, con=engine)
+    # write_excel(df=df12, sheet_name='上个月代理渠道销售')
+    # zl.logger.warning("零售日报-上个月代理渠道销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-    df13 = pd.read_sql(sql=sql_mmp_last_month, con=engine)
-    write_excel(df=df13, sheet_name='上个月mmp销售')
-    zl.logger.warning("零售日报-上个月mmp销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    # df13 = pd.read_sql(sql=sql_mmp_last_month, con=engine)
+    # write_excel(df=df13, sheet_name='上个月mmp销售')
+    # zl.logger.warning("零售日报-上个月mmp销售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
     # df14 = pd.read_sql(sql=sql_colmo, con=engine)
     # write_excel(df=df14, sheet_name='colmo当月销售')
     # zl.logger.warning("指环王-colmo当月销售，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-    df15 = pd.read_sql(sql=sql_19mmp_retail, con=engine)
-    write_excel(df=df15, sheet_name='19年MMP')
-    zl.logger.warning("指环王-19年MMP计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-
-    df16 = pd.read_sql(sql=sql_19channel_retail, con=engine)
-    write_excel(df=df16, sheet_name='19年代理渠道')
-    zl.logger.warning("指环王-19年代理渠道计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-
-    df17 = pd.read_sql(sql=sql_quniantongqilingshou, con=engine)
-    write_excel(df=df17, sheet_name='去年零售同期')
-    zl.logger.warning("去年零售同期计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-
-    df18 = pd.read_sql(sql=sql_jinnianlingshou, con=engine)
-    write_excel(df=df18, sheet_name='今年零售')
-    zl.logger.warning("今年零售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    # df15 = pd.read_sql(sql=sql_19mmp_retail, con=engine)
+    # write_excel(df=df15, sheet_name='19年MMP')
+    # zl.logger.warning("指环王-19年MMP计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    #
+    # df16 = pd.read_sql(sql=sql_19channel_retail, con=engine)
+    # write_excel(df=df16, sheet_name='19年代理渠道')
+    # zl.logger.warning("指环王-19年代理渠道计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    #
+    # df17 = pd.read_sql(sql=sql_quniantongqilingshou, con=engine)
+    # write_excel(df=df17, sheet_name='去年零售同期')
+    # zl.logger.warning("去年零售同期计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    #
+    # df18 = pd.read_sql(sql=sql_jinnianlingshou, con=engine)
+    # write_excel(df=df18, sheet_name='今年零售')
+    # zl.logger.warning("今年零售计算完毕，结束计算时间 :"+ time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
     # df19 = pd.read_sql(sql=sql_colmozhuangxiang, con=engine)
     # write_excel(df=df19, sheet_name='colmo专项')
