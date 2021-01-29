@@ -1,5 +1,6 @@
 import pymysql
-
+import time
+import dryer_mmp_data as dd
 
 class AVCUpdate:
     def __init__(self):
@@ -19,6 +20,7 @@ class AVCUpdate:
         cur.execute(self.update_offline_all)
         cur.close()
         self.conn.commit()
+        print("更新线下全渠道数据时间 :" + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
     def update_group_month_data(self):
         cur = self.conn.cursor()
@@ -26,7 +28,7 @@ class AVCUpdate:
         cur.execute(self.update_month_data)
         cur.close()
         self.conn.commit()
-        
+        print("更新dwd schema下的所有奥维月度XXXXX汇总表时间 :" + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
     def update_group_week_data(self):
         cur = self.conn.cursor()
@@ -34,7 +36,7 @@ class AVCUpdate:
         cur.execute(self.update_week_data)
         cur.close()
         self.conn.commit()
-
+        print("更新dwd schema下的所有奥维周度XXXXX汇总表时间 :" + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
     def update_group_model_data(self):
         cur = self.conn.cursor()
@@ -42,6 +44,7 @@ class AVCUpdate:
         cur.execute(self.update_model_data)
         cur.close()
         self.conn.commit()
+        print("更新dwd schema下的所有奥维机型汇总表时间 :" + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
     def update_data_update_time(self):
         cur = self.conn.cursor()
@@ -49,6 +52,7 @@ class AVCUpdate:
         cur.execute(self.data_update_time)
         cur.close()
         self.conn.commit()
+        print("更新数据监控时间时间 :" + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
     def update_standard_month_data(self, start_time, last_month, this_month, last_month_week, this_month_week):
         """
@@ -167,6 +171,7 @@ class AVCUpdate:
         cur.execute(create_dwd_标准化月度线上干衣机)
         cur.execute(drop_dwd_标准化月度线上洗衣机)
         cur.execute(create_dwd_标准化月度线上洗衣机)
+        print("标准化月度数据更新时间 :" + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         cur.close()
         self.conn.commit()
         
@@ -174,16 +179,11 @@ class AVCUpdate:
 
 if __name__ == '__main__':
     obj1 = AVCUpdate()
-    # 更新dwd schema下的所有奥维月度XXXXX汇总表
-    # obj1.update_group_month_data()
-    # 更新dwd schema下的所有奥维周度XXXXX汇总表
-    obj1.update_group_week_data()
-    # 更新dwd schema下的所有奥维含机型XXXXX汇总表
-    obj1.update_group_model_data()
-    #  标准化月度更新(开始时间 INT,上个月 varchar(100),本月 varchar(100),上个月的周 varchar(255),本月周 varchar(255))
-    obj1.update_standard_month_data(19, "", "21.01", "'None'", "'21W01','21W02','21W03','21W04'")
-    # 更新数据更新时间
-    obj1.update_data_update_time()
-    # 更新线下全渠道数据
-    obj1.update_offline_all_data()
-    obj1.close_con()
+    # obj1.update_group_month_data()#更新奥维月度数据
+    # obj1.update_group_week_data()#更新奥维周度数据
+    # obj1.update_group_model_data()#更新奥维机型数据
+    # obj1.update_standard_month_data(19, "", "21.01", "'None'", "'21W01','21W02','21W03','21W04'") #标准化月度更新(开始时间,上个月,本月,上个月的周,本月周)
+    # obj1.update_data_update_time()#更新数更新时间
+    obj1.update_offline_all_data()#更新线下全渠道数据
+    dd.update_dry_all_data()#干衣机数据更新  
+    obj1.close_con()#关闭数据库连接
