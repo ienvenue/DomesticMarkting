@@ -64,14 +64,14 @@ if __name__ == '__main__':
     # df = pd.read_excel(r'D:\MyData\zhangmd10\Desktop\新建文件夹 (2)\mmp11.2.xlsx', encoding='gbk', usecols=mmp_use_col)
     # del_data(df, 'mmp零售数据全量')
 
-    #导入
+    #自定义日期，当前为导入日期
     date_str=str(time.strftime("%Y-%m-%d",time.localtime()))
     df1 = pd.read_excel(r'\\10.157.2.94\共享文件\Data\进销存方案\内部库存明细.xlsx',sheet_name='库存明细',header=0)
     add_today_column(df1,date_str)
-    save_data(df1,'洗衣机内部库存明细','append')
+    save_data(df1,'洗内内部库存明细','append')
     df2 = pd.read_excel(r'\\10.157.2.94\共享文件\Data\进销存方案\系统未审.xlsx',sheet_name='未审',header=1)
     add_today_column(df2,date_str)
-    save_data(df2,'洗衣机订单未审明细','append')
+    save_data(df2,'洗内订单未审明细','append')
     df3 = pd.read_excel(r'\\10.157.2.94\共享文件\Data\进销存方案\系统未审.xlsx', sheet_name='开提', header=1)
     add_today_column(df3,date_str)
-    save_data(df3, '洗衣机订单开提明细', 'append')
+    save_data(df3, '洗内订单开提明细', 'append')
