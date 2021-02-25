@@ -17,7 +17,7 @@ channel_use_col = ['中心编码', '中心名称', '卖方商务中心编码', '
 mmp_use_col = ['上报ID','商品型号','商品编码','大类','小类','门店编码','门店名称','门店等级',
               '门店一级分类','门店二级分类','导购员编码','导购员名称','导购员手机号',
               '导购类型','数量','单价','零售价','总价','资源抵扣金额','厂家承担券',
-              '分部名称','CMDM中心编码','产品线','创建时间','顾客手机']
+              '分部名称','CMDM中心编码','产品线','创建时间','顾客手机','上报单号','来源单号','上报类型','订单分类','套餐编码','套餐名称','套餐数量','套餐单价','套餐抵扣金额']
 
 LOG_LINE_NUM = 0
 
@@ -116,7 +116,7 @@ def import_data():
     try:
         df=ip.load_data(path,sheetname,row,eval(cols))
         ip.del_data(df,tablename)
-        ip.save_date(df,tablename,type_name)
+        ip.save_data(df,tablename,type_name)
         write_log_to_text(tablename+'正在导入，请等待'+ "\n")
         messagebox.showinfo('提示', '导入成功'+ "\n")
         write_log_to_text(tablename+'导入成功!'+ "\n")
