@@ -175,15 +175,26 @@ class AVCUpdate:
         cur.close()
         self.conn.commit()
         
+def avc_month_data_update():
+    obj = AVCUpdate()
+    obj.update_group_month_data()  # 更新奥维月度数据
+    obj.update_standard_month_data(19, "", "", "'None'", "'None'")  # 不含周度 标准化月度更新(开始时间,上个月,本月,上个月的周,本月周)
+    obj.update_data_update_time()  # 更新数据更新时间
 
+def avc_week_data_update():
+    obj = AVCUpdate()
+    obj.update_group_week_data()  # 更新奥维周度数据
+    obj.update_group_model_data()  # 更新奥维机型数据
+    obj.update_data_update_time()  # 更新数据更新时间
 
 if __name__ == '__main__':
     obj1 = AVCUpdate()
     # obj1.update_group_month_data()#更新奥维月度数据
     # obj1.update_group_week_data()#更新奥维周度数据
     # obj1.update_group_model_data()#更新奥维机型数据
-    # obj1.update_standard_month_data(19, "", "21.01", "'None'", "'21W01','21W02','21W03','21W04'") #标准化月度更新(开始时间,上个月,本月,上个月的周,本月周)
-    # obj1.update_data_update_time()#更新数更新时间
+    # 暂时不使用 obj1.update_standard_month_data(19, "", "21.01", "'None'", "'21W01','21W02','21W03','21W04','21W05'") #含周度 标准化月度更新(开始时间,上个月,本月,上个月的周,本月周)
+    # obj1.update_standard_month_data(19, "", "", "'None'", "'None'") #不含周度 标准化月度更新(开始时间,上个月,本月,上个月的周,本月周)
+    # obj1.update_data_update_time()#更新数据更新时间
     obj1.update_offline_all_data()#更新线下全渠道数据
-    dd.update_dry_all_data()#干衣机数据更新  
+    dd.update_dry_all_data()#干衣机数据更新
     obj1.close_con()#关闭数据库连接

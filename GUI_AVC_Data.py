@@ -171,7 +171,8 @@ def check_data():
 
 
 # 第7步，导入按钮和选择路径按钮
-btn_check = tk.Button(window, text='更新数据', command=ud.avc_data_update, font=('微软雅黑', 10)).place(x=230, y=230)
+btn_month = tk.Button(window, text='更新月度数据', command=ud.avc_month_data_update, font=('微软雅黑', 10)).place(x=190, y=230)
+btn_week = tk.Button(window, text='更新周度和机型数据', command=ud.avc_week_data_update, font=('微软雅黑', 10)).place(x=190, y=265)
 btn_import = tk.Button(window, text='确认导入', command=import_data, font=('微软雅黑', 10)).place(x=120, y=230)
 btn_path = tk.Button(window, text="路径选择", command=selectPath, font=('微软雅黑', 10)).place(x=320, y=25)
 
