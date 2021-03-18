@@ -3,7 +3,7 @@ from tkinter import *
 import time
 from tkinter import filedialog, messagebox,ttk
 from sqlalchemy import create_engine
-import export_retail_data as ep
+import update_all_data as ud
 import import_retail_data as ip
 
 channel_use_col = ['中心编码', '中心名称', '卖方商务中心编码', '卖方商务中心',
@@ -128,7 +128,7 @@ def import_data():
 # 第7步，导入按钮和选择路径按钮
 btn_import=tk.Button(window, text='确认导入', command=import_data, font=('微软雅黑', 10)).place(x=120, y=230)
 btn_path=tk.Button(window, text="路径选择", command=selectPath, font=('微软雅黑', 10)).place(x=320, y=25)
-btn_export=tk.Button(window, text="开始计算", command=ep.export_data, font=('微软雅黑', 10)).place(x=220, y=230)
+btn_export=tk.Button(window, text="更新数据", command=ud.update_offline_data, font=('微软雅黑', 10)).place(x=220, y=230)
 
 # 第8步，主窗口循环显示
 window.mainloop()
