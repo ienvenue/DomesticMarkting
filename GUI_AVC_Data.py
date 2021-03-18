@@ -86,7 +86,7 @@ def avc_month_xlsx2db(file_path, table_name, sheet_name, type_name, cols, header
     try:
         df = pd.read_excel(file_path, sheet_name=sheet_name, header=header, usecols=cols)
         df.to_sql(name=table_name, con=engine, if_exists=type_name, index=False)
-        messagebox.showerror('提示', '导入成功')
+        messagebox.showinfo('提示', '导入成功')
     except Exception as e:
         logging.exception(e)
 
@@ -97,7 +97,7 @@ def avc_week_xlsx2db(file_path, table_name, sheet_name, type_name, cols, header)
         df['年'] = df['周度'].map(lambda x: x.split('W')[0])
         df['周'] = df['周度'].map(lambda x: x.split('W')[1])
         df.to_sql(name=table_name, con=engine, if_exists=type_name, index=False)
-        messagebox.showerror('提示', '导入成功')
+        messagebox.showinfo('提示', '导入成功')
     except Exception as e:
         logging.exception(e)
 
@@ -106,7 +106,7 @@ def avc_month_csv2db(file_path, table_name, type_name, cols):
     try:
         df = pd.read_csv(file_path, usecols=cols, encoding="gbk")
         df.to_sql(name=table_name, con=engine, if_exists=type_name, index=False)
-        messagebox.showerror('提示', '导入成功')
+        messagebox.showinfo('提示', '导入成功')
     except Exception as e:
         logging.exception(e)
 
@@ -117,7 +117,7 @@ def avc_week_csv2db(file_path, table_name, type_name, cols):
         df['年'] = df['周度'].map(lambda x: x.split('W')[0])
         df['周'] = df['周度'].map(lambda x: x.split('W')[1])
         df.to_sql(name=table_name, con=engine, if_exists=type_name, index=False)
-        messagebox.showerror('提示', '导入成功')
+        messagebox.showinfo('提示', '导入成功')
     except Exception as e:
         logging.exception(e)
 
