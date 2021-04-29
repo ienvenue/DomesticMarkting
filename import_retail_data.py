@@ -27,7 +27,7 @@ def del_data(df, tablename):
     """
     conn = pymysql.connect(host='10.157.2.94', user='data_dev', password='data_dev0.')
     cur = conn.cursor()
-    if tablename == 'mmp零售数据全量':
+    if tablename in ('mmp零售数据全量','mmp冰箱'):
         col = '创建时间'
     else:
         col = '出库确认日期'

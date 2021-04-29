@@ -6,6 +6,12 @@ from sqlalchemy import create_engine
 import update_all_data as ud
 import import_retail_data as ip
 
+bx_mmp_use_cols = ['上报ID', '上报单号', '来源单号', '上报类型', '产品类型', '商品型号', '商品编码', '商品名称', '大类', '小类', '商品备注', '门店编码', '门店名称',
+                   '门店等级', '省份(门店)','地级市(门店)', '县/区(门店)', '经营单位编码', '经营单位名称', '所属代理商编码', '所属代理商名称', '导购经销商编码', '导购经销商名称', '门店一级分类', '门店二级分类', '门店三级分类',
+                   '事业部分类', '导购员编码', '导购员名称', '导购员手机号', '导购类型', '数量', '单价', '零售价', '总价', '资源抵扣金额', '分部编码', '分部名称',
+                   'CMDM中心编码', '大区', '容量', '容量段', '品类', '产品线', '顾客固话', '是否手工导入', '顾客手机', '上报时间',
+                   '所属区域', '来源系统',  '创建时间']
+
 channel_use_col = ['中心编码', '中心名称', '卖方商务中心编码', '卖方商务中心',
                    '卖方合作模式大类(CRM)/一级分类(CMDM)', '卖方合作模式小类(CRM)/二级分类(CMDM)',
                    '卖方客户编码', '卖方客户名称', '是否有效客户', '渠道层级', '单据日期', '出库确认日期',
@@ -58,7 +64,7 @@ entry_path.place(x=120, y=30)
 var_cols=tk.StringVar()
 entry_cols=tk.ttk.Combobox(window, textvariable=var_cols, width=18, font=('微软雅黑', 12))
 entry_cols.place(x=120, y=70)
-entry_cols['values']=('MMP零售', '一级渠道', '二级渠道')
+entry_cols['values']=('洗衣机MMP', '一级渠道', '二级渠道','冰箱MMP')
 # canvas = tk.Canvas(window, width=185, height=24, bg="white").place(x=120, y=110)
 log_data_Text=tk.Text(window, width=28, height=8)
 log_data_Text.place(x=120, y=110)  # 日志框
@@ -87,39 +93,16 @@ def selectPath():
     path_=path_.replace("/", "\\\\")
     var_path.set(path_)
 
-# 显示下载进度
-# def progress():
-#     # 填充进度条
-#     fill_line = canvas.create_rectangle(1.5, 1.5, 0, 23, width=0, fill="green")
-#     x = 500  # 未知变量，可更改
-#     n = 185 / x  # 185是矩形填充满的次数
-#     for i in range(x):
-#         n = n + 185 / x
-#         canvas.coords(fill_line, (0, 0, n, 60))
-#         window.update()
-#         time.sleep(0.01)  # 控制进度条流动的速度
-#
-#     # 清空进度条
-#     fill_line = canvas.create_rectangle(1.5, 1.5, 0, 23, width=0, fill="white")
-#     x = 500  # 未知变量，可更改
-#     n = 185 / x  # 185是矩形填充满的次数
-#
-#     for t in range(x):
-#         n = n + 185 / x
-#         # 以矩形的长度作为变量值更新
-#         canvas.coords(fill_line, (0, 0, n, 60))
-#         window.update()
-#         time.sleep(0)
 
 # 第6步，导入数据
 def import_data():
     # 获取用户输入
     path=var_path.get()
-    tablename=var_cols.get().replace('MMP零售', 'mmp零售数据全量').replace('一级渠道', '一级代理渠道零售数据').replace('二级渠道', '二级代理渠道零售数据')
-    sheetname='Sheet0' if tablename=='mmp零售数据全量' else '   渠道出库明细'
+    tablename=var_cols.get().replace('冰箱MMP', 'mmp冰箱').replace('洗衣机MMP', 'mmp零售数据全量').replace('一级渠道', '一级代理渠道零售数据').replace('二级渠道', '二级代理渠道零售数据')
+    sheetname='Sheet0' if tablename in ('mmp零售数据全量','mmp冰箱') else '   渠道出库明细'
     type_name='append'
-    cols=var_cols.get().replace('MMP零售', 'mmp_use_col').replace('一级渠道', 'channel_use_col').replace('二级渠道', 'channel_use_col')
-    row=0 if tablename=='mmp零售数据全量' else 1
+    cols=var_cols.get().replace('冰箱MMP', 'bx_mmp_use_cols').replace('洗衣机MMP', 'mmp_use_col').replace('一级渠道', 'channel_use_col').replace('二级渠道', 'channel_use_col')
+    row=0 if tablename in ('mmp零售数据全量','mmp冰箱')  else 1
     try:
         df=ip.load_data(path,sheetname,row,eval(cols))
         ip.del_data(df,tablename)
