@@ -30,7 +30,7 @@ from
 inner join ods.洗衣机产品基础表 b on
    a.商品编码 = b.产品编码
 where
-   创建时间 between '2021-04-01' and '2021-05-05'
+   创建时间 between '2021-05-06' and '2021-05-31'
    and 顾客手机 is not null
    and length(顾客手机) = 11
    and 门店一级分类 in ('苏宁',
@@ -58,7 +58,7 @@ select
 from
    ods.mmp冰箱
 where
-   创建时间 between '2021-04-01' and '2021-05-05'
+   创建时间 between '2021-05-06' and '2021-05-31'
    and 商品编码 not like 'T%%'
    and 顾客手机 is not null
    and length(顾客手机) = 11
@@ -102,4 +102,4 @@ time.sleep(30)
 # df_merged_brand['套购金额'] = df_merged_brand.apply(lambda x: total(x.洗衣机销额, x.冰箱销额, x.间隔), axis=1)
 
 # df_merged_brand = df_merged_brand[(abs(df_merged_brand['洗衣机销额'])>=500) & (abs(df_merged_brand['冰箱销额'])>=500)]
-# df_merged_brand.to_excel(r'D:\MyData\zhangmd10\Desktop\冰洗套购(品牌).xlsx', index=False)
+# df_merged_brand.to_excel(r'D:\MyData\zhang md10\Desktop\冰洗套购(品牌).xlsx', index=False)

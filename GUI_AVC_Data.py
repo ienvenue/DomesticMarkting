@@ -9,34 +9,34 @@ import update_all_data as ud
 engine = create_engine("mysql+pymysql://data_dev:data_dev0.@10.157.2.94:3306/aowei")
 # 定义字段
 月度线上干衣机 = ['销量', '销额', '单价', '月度', '品牌', '机型', '品类', '电商1', '变频', '产品类型', '干衣方式', '控制方式',
-           '品牌类型', '容量', '上市月度', '上市周度', '子品牌', '通用价格段', '线上价格段', '小天鹅价格段', '小天鹅容量段']
+            '容量', '上市月度', '上市周度', '子品牌', '通用价格段', '线上价格段', '小天鹅价格段', '小天鹅容量段']
 
 月度线上洗衣机 = ['销量', '销额', '单价', '月度', '品牌', '机型', '品类', '电商1', '变频', '产品类型三星', '产品系列', '尺寸', '电机类型',
-           '耗电量', '烘干', '烘干类型', '厚度', '控制方式', '能效等级', '品牌类型', '容量', '上市月度', '上市周度', '洗涤类型', '智能',
+           '耗电量', '烘干', '烘干类型', '厚度', '控制方式', '能效等级',  '容量', '上市月度', '上市周度', '洗涤类型', '智能',
            '转速', '子品牌', '价格段', '容量段', '洗涤价格段1', '洗涤容量段', '小天鹅价格段', '小天鹅容量段'
            ]
 周度线上洗衣机 = ['销量', '销额', '单价', '周度', '品牌', '机型', '品类', '电商1', '变频', '产品类型三星', '产品系列', '尺寸',
-           '电机类型', '耗电量', '烘干', '烘干类型', '厚度', '控制方式', '能效等级', '品牌类型', '容量', '上市月度', '上市周度',
+           '电机类型', '耗电量', '烘干', '烘干类型', '厚度', '控制方式', '能效等级',  '容量', '上市月度', '上市周度',
            '洗涤类型', '智能', '转速', '子品牌', '价格段', '容量段', '洗涤价格段1', '洗涤容量段', '小天鹅价格段', '小天鹅容量段']
 
-周度线上干衣机 = ['销量', '销额', '单价', '周度', '品牌', '机型', '品类', '电商1', '变频', '产品类型', '干衣方式', '控制方式', '品牌类型', '容量',
+周度线上干衣机 = ['销量', '销额', '单价', '周度', '品牌', '机型', '品类', '电商1', '变频', '产品类型', '干衣方式', '控制方式',  '容量',
            '上市月度', '上市周度', '通用价格段', '线上价格段', '小天鹅价格段', '小天鹅容量段', '子品牌'
            ]
-月度线下干衣机 = ['销量', '销额', '单价', '月度', '品牌', '机型', '品类', '变频', '产品类型', '干衣方式', '品牌类型', '容量', '上市月度', '上市周度',
+月度线下干衣机 = ['销量', '销额', '单价', '月度', '品牌', '机型', '品类', '变频', '产品类型', '干衣方式',  '容量', '上市月度', '上市周度',
            '子品牌', '大区', '地市', '美的渠道',  '省份', '洗衣机美的片区', '美的中心', '洗衣机美的中心2', '县市级别2', '价格段',
            '容量段', '线下价格段', '线下容量段', '小天鹅价格段', '小天鹅容量段']
 
 月度线下洗衣机 = ['销量', '销额', '单价', '月度', '品牌', '机型', '品类', '壁挂洗衣机', '变频', '产品类型', '产品系列', '尺寸', '电机类型', '耗电量',
-           '烘干', '烘干类型', '厚度', '集团品牌', '能效等级', '品牌类型', '容量', '上市月度', '上市周度', '洗涤方式1', '洗涤类型', '小天鹅品牌',
+           '烘干', '烘干类型', '厚度', '集团品牌', '能效等级',  '容量', '上市月度', '上市周度', '洗涤方式1', '洗涤类型', '小天鹅品牌',
            '智能', '转速', '子品牌', '大区', '地市', '美的渠道',  '省份', '洗衣机美的片区', '美的中心', '洗衣机美的中心2', '县市级别2',
            '通用价格段新', '通用容量段新', '洗涤价格段改', '洗涤容量段改', '小天鹅价格段', '小天鹅容量段']
 
 周度线下洗衣机 = ['销量', '销额', '单价', '周度', '品牌', '机型', '品类', '壁挂洗衣机', '变频', '产品类型', '产品系列', '尺寸', '电机类型', '耗电量',
-           '烘干', '烘干类型', '厚度', '集团品牌', '能效等级', '品牌类型', '容量', '上市月度', '上市周度', '洗涤方式1', '洗涤类型', '小天鹅品牌',
+           '烘干', '烘干类型', '厚度', '集团品牌', '能效等级',  '容量', '上市月度', '上市周度', '洗涤方式1', '洗涤类型', '小天鹅品牌',
            '智能', '转速', '子品牌', '大区', '地市', '美的渠道',  '省份', '洗衣机美的片区', '美的中心', '洗衣机美的中心2', '县市级别2',
            '通用价格段新', '通用容量段新', '洗涤价格段改', '洗涤容量段改', '小天鹅价格段', '小天鹅容量段'
            ]
-周度线下干衣机 = ['销量', '销额', '单价', '周度', '品牌', '机型', '品类', '变频', '产品类型', '干衣方式', '品牌类型', '容量', '上市月度', '上市周度',
+周度线下干衣机 = ['销量', '销额', '单价', '周度', '品牌', '机型', '品类', '变频', '产品类型', '干衣方式',  '容量', '上市月度', '上市周度',
            '子品牌', '大区', '地市', '美的渠道',  '省份', '洗衣机美的片区', '美的中心', '洗衣机美的中心2', '县市级别2', '价格段',
            '容量段', '线下价格段', '线下容量段', '小天鹅价格段', '小天鹅容量段']
 
@@ -79,7 +79,7 @@ entry_type_name['values'] = ('覆盖', '追加')
 file_type = tk.StringVar(value='xlsx')
 entry_file_type = ttk.Combobox(window, textvariable=file_type, width=18, font=('微软雅黑', 12))
 entry_file_type.place(x=120, y=190)
-entry_file_type['values'] = ('xlsx', 'csv')
+entry_file_type['values'] = ('xlsx', 'csv', 'txt')
 
 
 def avc_month_xlsx2db(file_path, table_name, sheet_name, type_name, cols, header):
@@ -125,6 +125,34 @@ def avc_week_csv2db(file_path, table_name, type_name, cols):
     except Exception as e:
         logging.exception(e)
 
+def avc_month_txt2db(file_path, table_name, type_name, cols):
+    try:
+        df = pd.read_table(file_path, usecols=cols, sep=';')
+        # select all columns
+        col = df.select_dtypes(include=['object']).columns
+        # apply function on those columns
+        df[col] = df[col].applymap(lambda x: x.strip())
+        df.rename(columns={'美的中心': '洗衣机美的中心'}, inplace=True)
+        df.to_sql(name=table_name, con=engine, if_exists=type_name, index=False)
+        messagebox.showinfo('提示', '导入成功')
+    except Exception as e:
+        logging.exception(e)
+
+
+def avc_week_txt2db(file_path, table_name, type_name, cols):
+    try:
+        df = pd.read_table(file_path, usecols=cols, sep=';')
+        # select all columns
+        col = df.select_dtypes(include=['object']).columns
+        # apply function on those columns
+        df[col] = df[col].applymap(lambda x: x.strip())
+        df.rename(columns={'美的中心': '洗衣机美的中心'}, inplace=True)
+        df['年'] = df['周度'].map(lambda x: x.split('W')[0])
+        df['周'] = df['周度'].map(lambda x: x.split('W')[1])
+        df.to_sql(name=table_name, con=engine, if_exists=type_name, index=False)
+        messagebox.showinfo('提示', '导入成功')
+    except Exception as e:
+        logging.exception(e)
 
 # 绝对路径替换
 def selectPath():
@@ -148,6 +176,8 @@ def import_data():
                 avc_week_xlsx2db(path, tablename, sheetname, type_name, cols, 0)
             elif filetype == 'csv':
                 avc_week_csv2db(path, tablename, type_name, cols)
+            elif filetype == 'txt':
+                avc_week_txt2db(path, tablename, type_name, cols)
             else:
                 messagebox.showerror('提示', '导入失败')
             window.mainloop()
@@ -156,6 +186,8 @@ def import_data():
                 avc_month_xlsx2db(path, tablename, sheetname, type_name, cols, 0)
             elif filetype == 'csv':
                 avc_month_csv2db(path, tablename, type_name, cols)
+            elif filetype == 'txt':
+                avc_month_txt2db(path, tablename, type_name, cols)
             else:
                 messagebox.showerror('提示', '导入失败请确认类型')
             window.mainloop()

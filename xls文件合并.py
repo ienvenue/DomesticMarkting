@@ -17,7 +17,7 @@ file_lst = [file for file in os.listdir()]
 df_offical = pd.DataFrame()
 for file in file_lst:
     try:
-        frame = pd.read_excel(file, header=0, sheet_name='Sheet1')
+        frame = pd.read_excel(file, header=2, sheet_name='Sheet1')
     except:
         print(file)
     df_offical = df_offical.append(frame)

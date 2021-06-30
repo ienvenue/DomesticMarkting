@@ -1,3 +1,4 @@
+import logging
 import tkinter as tk
 from tkinter import *
 import time
@@ -110,9 +111,10 @@ def import_data():
         write_log_to_text(tablename+'正在导入，请等待'+ "\n")
         messagebox.showinfo('提示', '导入成功'+ "\n")
         write_log_to_text(tablename+'导入成功!'+ "\n")
-    except:
+    except Exception as e:
+        logging.exception(e)
         messagebox.showerror('提示', '导入失败'+ "\n")
-        write_log_to_text(tablename + '导入失败,请确认表名和文件名'+ "\n"  )
+        write_log_to_text(tablename + '导入失败，出现如下异常：%s'%e+"\n")
     window.mainloop()
 
 # 第7步，导入按钮和选择路径按钮

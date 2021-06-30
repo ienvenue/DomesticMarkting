@@ -38,6 +38,12 @@ def file2db(filetype, path, tablename, sheetname, updatetype, specifycols, rownu
     elif filetype == 'csv':
         df = pd.read_csv(path, header=rownum, encoding="utf8", usecols=specifycols)
         df.to_sql(name=tablename, con=engine, if_exists=updatetype, index=False, schema=schema)
+    elif filetype == 'txt':
+        df = pd.read_table(path, header=rownum,sep=';')
+        # 对所有数据剔除空格
+        col = df.select_dtypes(include=['object']).columns
+        df[col] = df[col].applymap(lambda x: x.strip())
+        df.to_sql(name=tablename, con=engine, if_exists=updatetype, index=False, schema=schema)
     else:
         print("导入文件类型错误,时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     print(tablename + "导入结束时间 :", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
@@ -57,10 +63,11 @@ if __name__ == '__main__':
     # specifycols: 指定导入的列，使用详见函数注释
     # rownum:指定从第rownum+1行开始导入
     file2db(filetype='xlsx',
-            schema='dim',
-            path=r'\\10.157.2.94\共享文件\奥维数据\配置表\奥维地市对应新中心.xlsx',
-            tablename='奥维地市对应中心',
-            sheetname='奥维',
+            schema='temp',
+            path=r'\\10.157.2.94\共享文件\Data\中心业务业绩\参考数据\中心业务业绩数据采集(南昌).xlsx',
+            tablename='客户任务与业务对应关系',
+            sheetname='客户任务与业务对应关系',
             updatetype='replace',
-            specifycols=None,
+             specifycols=None,
+            # specifycols=["设备id","品类","型号","品牌","物料编码","sn","省","市","区","生产时间","提货时间","销售时间","安装时间","注册时间","事业部"],
             rownum=0)
